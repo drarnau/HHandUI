@@ -20,6 +20,7 @@
 - Tauchen discretization for AR(1)
 - Rowenhorst discretization for AR(1)
 - Linear interpolation
+  - *KMRS* do not allow extrapolation
 - Golden-section search (__not sure__). Depending on implementation:
   - Can we use the already-out-there codes?
   - Is it efficient to use the already-out-there codes in terms of computation and design time vs. creating our application-specific implementation?
