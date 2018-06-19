@@ -2,16 +2,16 @@
 <!-- ### To-do/keep in mind
 - Codes are for computers to execute and for humans to read.
 - The code for couples should:
-  - Have separate utility for the male and the female within the same maximisation problem -->
+  - Have separate utility for the male and the female within the same maximization problem -->
 
 ### Functions
 ##### Need to be created
 - Instantaneous utility
-  - Inputs: consumption (real), employed [0,1], search [0,1]
+  - Inputs: parameters, consumption (real), employed [0,1], search [0,1], search cost (element of a vector/array)
   - Output: utility
   - Given log utility for consumption, if consumption is negative, the function should return a very negative number instead of evaluating
 - UI Benefits
-  - Input: productivity shock
+  - Input: productivity shock, average productivity (equilibrium object), wage (equilibrium object)
   - Output: UI benefit
 
 ##### Already out there
@@ -21,16 +21,16 @@
 - Rowenhorst discretization for AR(1)
 - Linear interpolation
   - *KMRS* do not allow extrapolation
-- Golden-section search (__not sure__). Depending on implementation:
+- Golden-section search. Depending on implementation:
   - Can we use the already-out-there codes?
   - Is it efficient to use the already-out-there codes in terms of computation and design time vs. creating our application-specific implementation?
 
 ### Steps
 1. Load/Input parameters
   - Keep in mind difference between *model* parameters vs. *numerical* parameters (e.g. grid points).
-2. Create grids for:
-  - Assets (value function iteration): *KMRS* use 48 grid points with more points close to 0 (__not clear how they do it exactly__). Range: [0,1440].
-  - Assets (simulation): *KMRS* use 1000 grid points evently distributed. Same range as before.
+2. Create grids and transition matrices for:
+  - Assets (value function iteration): *KMRS* use 48 grid points with more points close to 0. Range: [0,1440].
+  - Assets (simulation): *KMRS* use 1000 grid points evenly distributed. Same range as before.
   - Productivity shock: *KMRS* do it through Tauchen. 20 grid points that cover 2 standard deviations.
   - Match quality shock: *KMRS* do it through Tauchen. 7 grid points that cover 2 standard deviations.
 3. Define functions for the expected values of next period of the Bellman equations
@@ -49,6 +49,3 @@
 6. Use Golden search to find policy functions
   - Update guess
   - Keep iterating until guess and outcome of golden search are very similar
-7. Use policy functions to simulate an economy with a large number of agents for a large number of periods. To be computed:
-  - Labor market transitions.
-  - Labor market transitions by wealth quintiles.
