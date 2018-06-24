@@ -239,44 +239,8 @@ mutable struct DecisionRules
 end
 
 # Model-specific functions
-"""
-	utility(consumption[, works, searches, ind_γ])
+u(c) = log(max(1e-300,c))
 
-Compute instantaneous utility as in Krusell et al.
-
-# Arguments
-- `consumption::Float64` : amount of consumption
-- `works::Bool` : whether the agent works
-- `searches:: Bool` : whether the agent seraches
-- `ind_γ::Int64` : index of the serach shock
-"""
-utility = function(
-			f::Fundamentals,
-			consumption::Float64,
-			works::Bool = false,
-			searches::Bool = false,
-			ind_γ::Int64 = 0
-			)
-	if searches
-		if ind_γ > 0
-			aux_search = f.γ_values[ind_γ]*searches
-		else
-			throw(ArgumentError("When searches is true,
-								realisation_γ needs to be a valid index for γ"))
-		end
-		if works
-			throw(ArgumentError("Agent cannot work and search simultaneously"))
-		end
-	else
-		aux_search = 0.
-	end
-
-	if consumption <= 0.
-		return -1e10
-	else
-		return log(consumption) - (f.α*works) - aux_search
-	end
-end
 """
 	benefits(productivity)
 
@@ -285,14 +249,10 @@ Compute UI payments according to the implementation in Krusell et al.
 **CAREFUL**: wage already included in the function output
 """
 function benefits(f::Fundamentals, e::Equilibrium, productivity::Float64)
-	if productivity <= 0.0
-		throw(ArgumentError("Productivity needs to be positive!"))
+	if (productivity*f.b_0) < (e.average_z*f.b_bar)
+		return productivity*f.b_0*e.w
 	else
-		if (productivity*f.b_0) < (e.average_z*f.b_bar)
-			return productivity*f.b_0*e.w
-		else
-			return e.average_z*f.b_bar*e.w
-		end
+		return e.average_z*f.b_bar*e.w
 	end
 end
 
@@ -314,7 +274,6 @@ function value_N(
     # Auxiliary vector to store the expected value for each level of assets tomorrow
     aux_exp = zeros(f.gp_a)
     @inbounds for ind_a′ in 1:f.gp_a
-        # sum_prob = 0.   # Auxiliary variable to check the sum of probabilities
         @inbounds for ind_z′ in 1:f.gp_z, ind_q′ in 1:f.gp_q, ind_γ′ in 1:f.gp_γ
             prob =  f.z_z′[ind_z,ind_z′]*
                     f.q_q′[ind_q′]*
@@ -322,47 +281,23 @@ function value_N(
             aux_exp[ind_a′] = aux_exp[ind_a′] + (prob*
                                                 ((f.λ_n*V[2,ind_γ′,ind_q′,ind_z′,ind_a′])+
                                                 ((1.-f.λ_n)*J[2,ind_γ′,ind_z′,ind_a′])))
-            # sum_prob = sum_prob + prob
         end
-        # if sum_prob ≉ 1.
-        #     error("Probability sum in value_N not equal 1!")
-        # end
     end
 
+	# Define interpolation for assets tomorrow
+	aux_inter = LinInterp(f.a_values, aux_exp)
+
     # Function of assets tomorrow
-    return_f =  function(a′::Float64)
-                    # Check assets are in bounds
+    return_f =  let aux_inter = aux_inter
+		function(a′::Float64)
+            # Compute consumption
+            c = (1.+e.r)*a + e.T - a′
 
-					# Define interpolation for assets tomorrow
-					aux_inter = LinInterp(f.a_values, aux_exp)
-
-                    # Compute consumption
-                    c = (1.+e.r)*a + e.T - a′
-
-                    return utility(f,c) + (f.β*aux_inter(a′))
-                end
+            return u(c) + (f.β*aux_inter(a′))
+        end
+	end
     return return_f
 end
-
-# function solve_N(f::Fundamentals, e::Equilibrium, VFs::ValueFunctions)
-# 	pf_N = zeros(f.gp_a, f.gp_z)
-# 	N = zeros(f.gp_a, f.gp_z)
-# 	for ind_a in 1:f.gp_a, ind_z in 1:f.gp_z
-# 		# Unpack some variables to improve readability
-# 		a = f.a_values[ind_a]             # Value of assets today
-# 		z = f.z_values[ind_z]             # Value of productivity today
-#
-# 		# Compute upper-boud for assets
-# 		aux_max_a = min(f.max_a-tiny, max(f.min_a,(1.+e.r)*a + e.T))
-#
-# 		# Get function to optimize
-# 		aux_f = value_N(ind_a,ind_z,f,e,VFs)
-#
-# 		# Solve for level of assets tomorrow that maximizes value function
-# 		pf_N[ind_a,ind_z], N[ind_a,ind_z] = golden_method(aux_f, f.min_a, aux_max_a)
-# 	end
-# 	return pf_N, N
-# end
 
 """
 Create a *function* of assets tomorrow to interpolate value for U Bellman equation
@@ -386,7 +321,6 @@ function value_U(
     # Auxiliary vector to store the expected value for each level of assets tomorrow
     aux_exp = zeros(f.gp_a)
     @inbounds for ind_a′ in 1:f.gp_a
-        # sum_prob = 0.   # Auxiliary variable to check the sum of probabilities
         @inbounds for  ind_z′ in 1:f.gp_z, ind_q′ in 1:f.gp_q, ind_γ′ in 1:f.gp_γ, ind_Iᴮ′ in 1:2
             prob =  f.z_z′[ind_z,ind_z′]*
                     f.q_q′[ind_q′]*
@@ -395,49 +329,23 @@ function value_U(
             aux_exp[ind_a′] = aux_exp[ind_a′] + (prob*
                                                 ((f.λ_u*V[ind_Iᴮ′,ind_γ′,ind_q′,ind_z′,ind_a′])+
                                                 ((1.-f.λ_u)*J[ind_Iᴮ′,ind_γ′,ind_z′,ind_a′])))
-			# sum_prob = sum_prob + prob
         end
-        # if sum_prob ≉ 1.
-        #     error("Probability sum in value_U not equal 1!")
-        # end
     end
 
+	# Define interpolation for assets tomorrow
+	aux_inter = LinInterp(f.a_values, aux_exp)
+
     # Function of assets tomorrow
-    return_f =  function(a′::Float64)
-                    # Check assets are in bounds
+    return_f =  let aux_inter = aux_inter
+		function(a′::Float64)
+            # Compute consumption
+            c = (1.+e.r)*a + (1.-f.τ)*Iᴮ*benefits(f,e,z) + e.T - a′
 
-					# Define interpolation for assets tomorrow
-					aux_inter = LinInterp(f.a_values, aux_exp)
-                    # Compute consumption
-                    c = (1.+e.r)*a + (1.-f.τ)*Iᴮ*benefits(f,e,z) + e.T - a′
-
-                    return utility(f,c,false,true,ind_γ) + (f.β*aux_inter(a′))
-                end
+            return u(c) - f.γ_values[ind_γ] + (f.β*aux_inter(a′))
+        end
+	end
     return return_f
 end
-
-# function solve_U(f::Fundamentals, e::Equilibrium, VFs::ValueFunctions)
-# 	pf_U = zeros(f.gp_a,f.gp_z,f.gp_γ,2)
-# 	U = zeros(f.gp_a,f.gp_z,f.gp_γ,2)
-#     for ind_a in 1:f.gp_a, ind_z in 1:f.gp_z, ind_q in 1:f.gp_q, ind_γ in 1:f.gp_γ, ind_Iᴮ in 1:2
-#         # Unpack some variables to improve readability
-#         a = f.a_values[ind_a]             # Value of assets today
-#         z = f.z_values[ind_z]             # Value of productivity today
-# 		q = f.q_values[ind_q]             # Value of match quality
-#      	Iᴮ = f.Iᴮ_values[ind_Iᴮ]          # Value of indicator UI function (is a Boolean)
-#
-# 		# Compute upper-boud for assets
-#         aux_max_a = min(f.max_a-tiny, max(f.min_a,(1.+e.r)*a + (1.-f.τ)*benefits(f,e,z)*Iᴮ + e.T))
-#
-# 		# Get function to optimize
-# 		aux_f = value_U(ind_a,ind_z,ind_γ,ind_Iᴮ,f,e,VFs)
-#
-#         # Solve for level of assets tomorrow that maximizes value function
-#         pf_U[ind_a,ind_z,ind_γ,ind_Iᴮ], U[ind_a,ind_z,ind_γ,ind_Iᴮ] =
-# 			golden_method(aux_f, f.min_a, aux_max_a)
-#     end
-# 	return pf_U, U
-# end
 
 """
 Create a *function* of assets tomorrow to interpolate value for W Bellman equation
@@ -460,7 +368,6 @@ function value_W(
     # Auxiliary vector to store the expected value for each level of assets tomorrow
     aux_exp = zeros(f.gp_a)
     @inbounds for ind_a′ in 1:f.gp_a
-        # sum_prob = 0.   # Auxiliary variable to check the sum of probabilities
         @inbounds for ind_z′ in 1:f.gp_z, ind_q′ in 1:f.gp_q, ind_γ′ in 1:f.gp_γ
             prob =  f.z_z′[ind_z,ind_z′]*
                     f.q_q′[ind_q′]*
@@ -470,49 +377,23 @@ function value_W(
                                 (f.λ_e*V[2,ind_γ′,max(ind_q,ind_q′),ind_z′,ind_a′,]) +
                                 (f.σ*(1.-f.λ_u)*J[1,ind_γ′,ind_z′,ind_a′]) +
                                 (f.σ*f.λ_u*V[1,ind_γ′,ind_q′,ind_z′,ind_a′])))
-
-            # sum_prob = sum_prob + prob
         end
-        # if sum_prob ≉ 1.
-        #     error("Probability sum in value_W not equal 1!")
-        # end
     end
 
+	# Define interpolation for assets tomorrow
+	aux_inter = LinInterp(f.a_values, aux_exp)
+
     # Function of assets tomorrow
-    return_f =  function(a′::Float64)
-                    # Check assets are in bounds
+	return_f =  let aux_inter = aux_inter
+		function(a′::Float64)
+            # Compute consumption
+            c = (1.+e.r)*a + (1.-f.τ)*e.w*q + e.T - a′
 
-					# Define interpolation for assets tomorrow
-					aux_inter = LinInterp(f.a_values, aux_exp)
-
-                    # Compute consumption
-                    c = (1.+e.r)*a + (1.-f.τ)*e.w*q + e.T - a′
-
-                    return utility(f,c,true) + (f.β*aux_inter(a′))
-                end
+            return u(c) - f.α + (f.β*aux_inter(a′))
+        end
+	end
     return return_f
 end
-
-# function solve_W(f::Fundamentals, e::Equilibrium, VFs::ValueFunctions)
-# 	pf_W = zeros(f.gp_a, f.gp_z, f.gp_q)
-# 	W = zeros(f.gp_a, f.gp_z, f.gp_q)
-# 	for ind_a in 1:f.gp_a, ind_z in 1:f.gp_z, ind_q in 1:f.gp_q
-# 		# Unpack some variables to improve readability
-# 		a = f.a_values[ind_a]             # Value of assets today
-# 		z = f.z_values[ind_z]             # Value of productivity today
-# 		q = f.q_values[ind_q]             # Value of match quality
-#
-# 		# Compute upper-boud for assets
-# 		aux_max_a = min(f.max_a-tiny, max(f.min_a,(1.+e.r)*a + (1.-f.τ)*e.w*z*q + e.T))
-#
-# 		# Get function to optimize
-# 		aux_f = value_W(ind_a,ind_z,ind_q,f,e,VFs)
-#
-# 		# Solve for level of assets tomorrow that maximizes value function
-# 		pf_W[ind_a,ind_z,ind_q], W[ind_a,ind_z,ind_q] = golden_method(aux_f, f.min_a, aux_max_a)
-# 	end
-# 	return pf_W, W
-# end
 
 """
 Computes decision rules
