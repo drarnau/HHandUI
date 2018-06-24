@@ -443,7 +443,7 @@ function find_DRs(f::Fundamentals, e::Equilibrium,
 
 	        # Solve for level of assets tomorrow that maximizes value function
 	        DRsᴺ.pf_N[ind_z,ind_a], VFsᴺ.N[ind_z,ind_a] =
-	            golden_method(value_N(ind_a,ind_z,f,e,VFs), f.min_a, aux_max_a)
+	            golden_method(value_N(ind_a,ind_z,f,e,VFs), f.min_a, aux_max_a, tol = 1e-6)
 
 	        @inbounds for ind_q in 1:f.gp_q
 	            # Unpack some variables to improve readability
@@ -454,7 +454,7 @@ function find_DRs(f::Fundamentals, e::Equilibrium,
 
 	            # Solve for level of assets tomorrow that maximizes value function
 	            DRsᴺ.pf_W[ind_q,ind_z,ind_a], VFsᴺ.W[ind_q,ind_z,ind_a] =
-	                golden_method(value_W(ind_a,ind_z,ind_q,f,e,VFs), f.min_a, aux_max_a)
+	                golden_method(value_W(ind_a,ind_z,ind_q,f,e,VFs), f.min_a, aux_max_a, tol = 1e-6)
 	        end
 
 	        @inbounds for ind_γ in 1:f.gp_γ, ind_Iᴮ in 1:2
@@ -466,7 +466,7 @@ function find_DRs(f::Fundamentals, e::Equilibrium,
 
 	            # Solve for level of assets tomorrow that maximizes value function
 	            DRsᴺ.pf_U[ind_Iᴮ,ind_γ,ind_z,ind_a], VFsᴺ.U[ind_Iᴮ,ind_γ,ind_z,ind_a] =
-	                golden_method(value_U(ind_a,ind_z,ind_γ,ind_Iᴮ,f,e,VFs), f.min_a, aux_max_a)
+	                golden_method(value_U(ind_a,ind_z,ind_γ,ind_Iᴮ,f,e,VFs), f.min_a, aux_max_a, tol = 1e-6)
 	        end
 	    end
 
@@ -507,7 +507,7 @@ end
 
 # Define precision parameters
 const maxIter = 20000			# Maximum number of iterations value function iteration
-const showError = 100			# Frequence to display error in value function iteration
+const showError = 300			# Frequence to display error in value function iteration
 const tiny = 1e-10				# A tiny positive number
 const tolerance = 1e-4			# Tolerance value function iteration
 
