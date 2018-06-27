@@ -29,7 +29,6 @@ function loggrid(start::Float64, stop::Float64, n::Int64)
         grid[element] = exp(log(grid[element-1]+2.0) + step) - 2.0
     end
     grid[end] = stop
-	foo = 6.4
     return grid
 end
 
