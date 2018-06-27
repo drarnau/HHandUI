@@ -22,4 +22,7 @@ There are three types of parameters (mutually exclusive categories):
 
 - [Arrays access](https://docs.julialang.org/en/stable/manual/performance-tips/#Access-arrays-in-memory-order,-along-columns-1)
 > A rule of thumb to keep in mind is that with column-major arrays, the first index changes most rapidly. Essentially this means that looping will be faster if the inner-most loop index is the first to appear in a slice expression.
-- With arrays of several dimensions, an extra dimension slows the code down significantly. Hence, the implementation of the unemployment insurance state is done *manually*. Instead of having an array `U(gp_a,gp_z,gp_gammas,1:2)`, we have two arrays `U_Ent` and `U_Not` both `(gp_a,gp_z,gp_gammas)`.
+
+**Only delivers efficiency gains without -O3**
+
+- With arrays of several dimensions, an extra dimension slows the code down significantly. Hence, the implementation of the unemployment insurance state is done *manually*. Instead of having an array `U(gp_a,gp_z,gp_gammas,1:2)`, we have two arrays `U_Ent` and `U_Not` both `(gp_a,gp_z,gp_gammas)`.**Only delivers efficiency gains without -O3**
