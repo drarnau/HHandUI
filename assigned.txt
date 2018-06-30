@@ -1,0 +1,6 @@
+0.166666666666666666  ! Average duration UI
+0.23                  ! Default replacement ratio
+0.465                 ! Benefits cap
+0.3                   ! Capital share of output in aggregate production function
+0.0067                ! Capital depreciation
+0.3                   ! Proportional tax on labor income

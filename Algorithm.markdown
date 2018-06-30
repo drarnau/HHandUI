@@ -26,3 +26,6 @@ There are three types of parameters (mutually exclusive categories):
 **Only delivers efficiency gains without -O3**
 
 - With arrays of several dimensions, an extra dimension slows the code down significantly. Hence, the implementation of the unemployment insurance state is done *manually*. Instead of having an array `U(gp_a,gp_z,gp_gammas,1:2)`, we have two arrays `U_Ent` and `U_Not` both `(gp_a,gp_z,gp_gammas)`.**Only delivers efficiency gains without -O3**
+
+## Dictionary of implementation names to model names
+- `beta` is β: Discount factor of households.
