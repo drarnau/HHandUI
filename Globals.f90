@@ -5,7 +5,8 @@ module globals
   integer, parameter :: gp_a = 48, gp_z = 20, gp_q = 7, gp_gamma = 3
 
   ! Real parameters
-  real(8), parameter :: cover_z = 2.d0 , cover_q = 2.d0, min_a = 0, max_a = 1440.0
+  real(8), parameter :: cover_z = 2.d0 , cover_q = 2.d0, min_a = 0, max_a = 1440.0, &
+                        tiny = 1.0d-10 
 
   ! Real variables
   real(8) :: alpha, beta, gamma_bar, epsilon_gamma, rho_z, sigma_epsilon, sigma_q, lambda_e, &

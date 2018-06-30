@@ -22,6 +22,7 @@ CONTAINS
       print '(a4,f9.6,a9)',"  + ", seconds, " seconds."
     end if
   end subroutine mytime
+
   !===== LINSPACE =================================================================================
   subroutine linspace(my_start, my_stop, n, grid)
     implicit none
@@ -189,4 +190,49 @@ CONTAINS
         f1 = f2
     end if
   end subroutine golden_method
+
+  !===== FINDS CLOSEST TWO NUMBERS IN A VECTOR ====================================================
+  subroutine my_smin(svector,g_points,svalue,low_bnd,upp_bnd)
+    implicit none
+    integer, intent(in) :: g_points
+    real(8), intent(in) :: svalue
+    real(8), dimension(g_points), intent(in) :: svector
+    integer, intent(out) :: low_bnd, upp_bnd
+    integer :: ind_x
+
+    low_bnd = g_points
+
+    do ind_x = 2, g_points
+        if (svalue.le.svector(ind_x)) then
+            low_bnd = ind_x - 1
+            exit
+        endif
+    enddo
+
+    if (low_bnd.eq.g_points) then
+        low_bnd = g_points - 1
+    endif
+
+    upp_bnd = low_bnd + 1
+  end subroutine my_smin
+
+  !===== LINEAR INTERPOLATION =====================================================================
+  subroutine my_inter(xvector,yvector,gp_xy,x_inter,y_inter)
+    ! For each value in xvector there is an image in yvector
+    ! This subroutine interpolate the value for x_inter that
+    ! would have in y_vector
+    implicit none
+    integer, intent(in) :: gp_xy
+    real(8), dimension(gp_xy), intent(in) :: xvector, yvector
+    real(8), intent(in) :: x_inter
+    real(8), intent(out) :: y_inter
+    integer :: x0, x1
+
+    ! Find closest values in vector x
+    call my_smin(xvector,gp_xy,x_inter,x0,x1)
+
+    ! Linear interpolation
+    y_inter = yvector(x0) + ( (yvector(x1)-yvector(x0)) * &
+    ((x_inter-xvector(x0))/(xvector(x1)-xvector(x0))))
+  end subroutine my_inter
 end module Utils
