@@ -21,6 +21,7 @@ CONTAINS
     if (seconds.gt.0.d0) then
       print '(a4,f9.6,a9)',"  + ", seconds, " seconds."
     end if
+    print *, ""
   end subroutine mytime
 
   !===== LINSPACE =================================================================================
