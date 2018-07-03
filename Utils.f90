@@ -217,6 +217,19 @@ CONTAINS
     upp_bnd = low_bnd + 1
   end subroutine my_smin
 
+  !===== FINDS CLOSEST POSITION OF A REAL IN A VECTOR OF REALS ====================================
+  integer function my_closest(myvector,gp,myvalue)
+    implicit none
+    integer, intent(in) :: gp
+    real(8), intent(in) :: myvalue
+    real(8), dimension(gp), intent(in) :: myvector
+    real(8), dimension(gp) :: aux
+
+    aux = abs(myvector-myvalue)
+
+    my_closest = minloc(aux, dim=1)
+  end function my_closest
+
   !===== LINEAR INTERPOLATION =====================================================================
   subroutine my_inter(xvector,yvector,gp_xy,x_inter,y_inter)
     ! For each value in xvector there is an image in yvector

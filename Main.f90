@@ -2,13 +2,14 @@ program calibration
   use Globals
   use Utils
   implicit none
-  
+
   real(8) :: t_start, t_finish
 
 ! INITIALISATION: Read parameters from outside world, compute grids, tranistion matrices, and initialise equilibrium variables
   call cpu_time(t_start)
 
-  call initialisation(shock_z, shock_q, shock_g)
+  call initialisation()
+
 
   call cpu_time(t_finish)
   print *, "Initialisation time:"
@@ -26,7 +27,7 @@ program calibration
 ! SIMULATE THE ECONOMY
   call cpu_time(t_start)
 
-
+  ! call simulation()
 
 
   call cpu_time(t_finish)

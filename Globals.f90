@@ -5,7 +5,8 @@ module globals
   integer, parameter :: gp_a = 48, gp_z = 20, gp_q = 7, gp_gamma = 3, agents = 10000, periods = 10000
 
   ! Integer matrices
-  integer, dimension(agents,periods) :: shock_z, shock_q, shock_g
+  integer, dimension(:,:), allocatable :: shock_z, shock_q, shock_g, shock_le, shock_lu, shock_ln, &
+                                        shock_sigma
 
   ! Real parameters
   real(8), parameter :: cover_z = 2.d0 , cover_q = 2.d0, min_a = 0, max_a = 1440.0, &
