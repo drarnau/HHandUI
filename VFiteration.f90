@@ -10,13 +10,11 @@ subroutine VFiteration()
 
   real(8) :: error_N_vf, error_U_vf, error_W_vf, error_J_vf, error_V_vf, error_N_pf, error_U_pf, error_W_pf
 
-  real(8), dimension(gp_a) :: aux_exp
-
-  real(8), dimension(gp_z,gp_a) :: new_N_vf, new_N_pf, exp_N
-  real(8), dimension(1:2,gp_z,gp_a) :: exp_U
-  real(8), dimension(gp_q,gp_z,gp_a) :: new_W_vf, new_W_pf, exp_W
-  real(8), dimension(1:2,gp_gamma,gp_z,gp_a) :: new_U_vf, new_J_vf, new_U_pf
-  real(8), dimension(1:2,gp_gamma,gp_q,gp_z,gp_a) :: new_V_vf
+  real(8), dimension(gp_a,gp_z) :: new_N_vf, new_N_pf, exp_N
+  real(8), dimension(gp_a,gp_z,0:1) :: exp_U
+  real(8), dimension(gp_a,gp_z,gp_q) :: new_W_vf, new_W_pf, exp_W
+  real(8), dimension(gp_a,gp_z,gp_gamma,0:1) :: new_U_vf, new_J_vf, new_U_pf
+  real(8), dimension(gp_a,gp_z,gp_q,gp_gamma,0:1) :: new_V_vf
 
   ! Guess a value for global value functions
   call random_number(N_vf) ! Assign random numbers to N_vf
@@ -49,20 +47,17 @@ subroutine VFiteration()
     ! Iterate over all states TODAY
     do ind_a = 1, gp_a
     do ind_z = 1, gp_z
-      aux_exp = exp_N(ind_z, :)
-      call value_N(ind_a, aux_exp, new_N_pf(ind_z,ind_a), new_N_vf(ind_z,ind_a))
+      call value_N(ind_a, exp_N(:,ind_z), new_N_pf(ind_a,ind_z), new_N_vf(ind_a,ind_z))
 
       do ind_q = 1, gp_q
-        aux_exp = exp_W(ind_q, ind_z, :)
-        call value_W(ind_a, ind_z, ind_q, aux_exp, &
-                    new_W_pf(ind_q,ind_z,ind_a), new_W_vf(ind_q,ind_z,ind_a))
+        call value_W(ind_a, ind_z, ind_q, exp_W(:,ind_z,ind_q), &
+                    new_W_pf(ind_a,ind_z,ind_q), new_W_vf(ind_a,ind_z,ind_q))
       end do
 
-      do ind_b = 1,2
-        aux_exp = exp_U(ind_b, ind_z, :)
+      do ind_b = 0,1
         do ind_g = 1, gp_gamma
-          call value_U(ind_a, ind_z, ind_g, ind_b, aux_exp, &
-                      new_U_pf(ind_b,ind_g,ind_z,ind_a), new_U_vf(ind_b,ind_g,ind_z,ind_a))
+          call value_U(ind_a, ind_z, ind_g, ind_b, exp_U(:,ind_z,ind_b), &
+                      new_U_pf(ind_a,ind_z,ind_g,ind_b), new_U_vf(ind_a,ind_z,ind_g,ind_b))
         end do
       end do
     end do
@@ -119,9 +114,9 @@ subroutine ExpectedValues(exp_N, exp_U, exp_W)
   implicit none
   integer :: ind_z, ind_q, ind_b, ind_ap, ind_zp, ind_qp, ind_gp, ind_bp
   real(8) :: prob_N, prob_U, prob_W
-  real(8), dimension(gp_z,gp_a), intent(out) :: exp_N
-  real(8), dimension(1:2,gp_z,gp_a), intent(out) :: exp_U
-  real(8), dimension(gp_q,gp_z,gp_a), intent(out) :: exp_W
+  real(8), dimension(gp_a,gp_z), intent(out) :: exp_N
+  real(8), dimension(gp_a,gp_z,0:1), intent(out) :: exp_U
+  real(8), dimension(gp_a,gp_z,gp_q), intent(out) :: exp_W
 
   ! Initialise arrays to 0
   exp_N = 0.d0
@@ -136,27 +131,27 @@ subroutine ExpectedValues(exp_N, exp_U, exp_W)
     do ind_qp = 1, gp_q
     do ind_gp = 1, gp_gamma
       prob_N = z_trans(ind_z,ind_zp)*q_trans(ind_qp)*gamma_trans(ind_gp)
-      exp_N(ind_z,ind_ap) = exp_N(ind_z,ind_ap) + prob_N*(&
-                      (lambda_n*V_vf(2,ind_gp,ind_qp,ind_zp,ind_ap)) + &
-                      ((1.d0-lambda_n)*J_vf(2,ind_gp,ind_zp,ind_ap)))
+      exp_N(ind_ap,ind_z) = exp_N(ind_ap,ind_z) + prob_N*(&
+                      (lambda_n*V_vf(ind_ap,ind_zp,ind_qp,ind_gp,0)) + &
+                      ((1.d0-lambda_n)*J_vf(ind_ap,ind_zp,ind_gp,0)))
 
       ! Iterate over values of match quality TODAY
       prob_W = prob_N
       do ind_q = 1, gp_q
-        exp_W(ind_q,ind_z,ind_ap) = exp_W(ind_q,ind_z,ind_ap) + prob_W*(&
-                        ((1.d0-sigma-lambda_e)*V_vf(2,ind_gp,ind_qp,ind_zp,ind_ap)) + &
-                        (lambda_e*V_vf(2,ind_gp,max(ind_q,ind_qp),ind_zp,ind_ap)) + &
-                        (sigma*(1.d0-lambda_u)*J_vf(1,ind_gp,ind_zp,ind_ap)) + &
-                        (sigma*lambda_u*V_vf(1,ind_gp,ind_qp,ind_zp,ind_ap)))
+        exp_W(ind_ap,ind_z,ind_q) = exp_W(ind_ap,ind_z,ind_q) + prob_W*(&
+                        ((1.d0-sigma-lambda_e)*V_vf(ind_ap,ind_zp,ind_qp,ind_gp,0)) + &
+                        (lambda_e*V_vf(ind_ap,ind_zp,max(ind_q,ind_qp),ind_gp,0)) + &
+                        (sigma*(1.d0-lambda_u)*J_vf(ind_ap,ind_zp,ind_gp,1)) + &
+                        (sigma*lambda_u*V_vf(ind_ap,ind_zp,ind_qp,ind_gp,1)))
       end do
 
       ! Iterate over values of UI TODAY and TOMORROW
-      do ind_b = 1, 2
-      do ind_bp = 1, 2
+      do ind_b = 0, 1
+      do ind_bp = 0, 1
         prob_U = prob_W*IB_trans(ind_b,ind_bp)
-        exp_U(ind_b,ind_z,ind_ap) = exp_U(ind_b,ind_z,ind_ap) + prob_U*(&
-                        (lambda_u*V_vf(ind_bp,ind_gp,ind_qp,ind_zp,ind_ap)) + &
-                        ((1.d0-lambda_u)*J_vf(ind_bp,ind_gp,ind_zp,ind_ap)))
+        exp_U(ind_ap,ind_z,ind_b) = exp_U(ind_ap,ind_z,ind_b) + prob_U*(&
+                        (lambda_u*V_vf(ind_ap,ind_zp,ind_qp,ind_gp,ind_bp)) + &
+                        ((1.d0-lambda_u)*J_vf(ind_ap,ind_zp,ind_gp,ind_bp)))
       end do
       end do
     end do
@@ -250,7 +245,7 @@ subroutine value_U(ind_a, ind_z, ind_g, ind_b, aux_exp, pf, vf)
   real(8), intent(out) :: pf, vf
 
   ! Compute income
-  income = (1.d0+int_rate)*a_values(ind_a) + T + (1.d0-tau)*IB_values(ind_b)*benefits(z_values(ind_z))
+  income = (1.d0+int_rate)*a_values(ind_a) + T + (1.d0-tau)*real(ind_b)*benefits(z_values(ind_z))
 
   ! Compute upper bound for assets
   aux_max_a = min(max_a-tiny, max(min_a, income))

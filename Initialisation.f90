@@ -63,13 +63,11 @@ subroutine initialisation()
 
   ! call random_integers(agents,periods,1,3,shock_g)
 
-  ! UI process, 1: Entilted, 2: Not entailted
-  IB_values(1) = 1.d0
-  IB_values(2) = 0.d0
+  ! UI process, 1: Entilted, 0: Not entailted
   IB_trans(1,1) = mu
-  IB_trans(1,2) = 1.d0 - mu
-  IB_trans(2,1) = 0.d0
-  IB_trans(2,2) = 1.d0
+  IB_trans(1,0) = 1.d0 - mu
+  IB_trans(0,1) = 0.d0
+  IB_trans(0,0) = 1.d0
 
   ! Guess inital prices
   KLratio = 129.314057

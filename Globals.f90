@@ -21,15 +21,15 @@ module globals
   real(8), dimension(gp_z) :: z_values
   real(8), dimension(gp_q) :: q_values, q_trans
   real(8), dimension(gp_gamma) :: gamma_values, gamma_trans
-  real(8), dimension(1:2) :: IB_values
+  ! real(8), dimension(1:2) :: IB_values
 
   ! Real matrices
   real(8), dimension(gp_z,gp_z) :: z_trans
-  real(8), dimension(1:2, 1:2) :: IB_trans
-  real(8), dimension(gp_z,gp_a) :: N_vf, N_pf
-  real(8), dimension(gp_q,gp_z,gp_a) :: W_vf, W_pf
-  real(8), dimension(1:2,gp_gamma,gp_z,gp_a) :: U_vf, J_vf, U_pf
-  real(8), dimension(1:2,gp_gamma,gp_q,gp_z,gp_a) :: V_vf
+  real(8), dimension(0:1, 0:1) :: IB_trans
+  real(8), dimension(gp_a,gp_z) :: N_vf, N_pf
+  real(8), dimension(gp_a,gp_z,gp_q) :: W_vf, W_pf
+  real(8), dimension(gp_a,gp_z,gp_gamma,0:1) :: U_vf, J_vf, U_pf
+  real(8), dimension(gp_a,gp_z,gp_q,gp_gamma,0:1) :: V_vf
 
 CONTAINS
   real(8) function u(consumption)
@@ -43,19 +43,19 @@ CONTAINS
   subroutine ValueFunctions(N,U,W,J,V)
     implicit none
     integer :: ind_a, ind_z, ind_g, ind_b, ind_q
-    real(8), dimension(gp_z,gp_a), intent(in) :: N
-    real(8), dimension(gp_q,gp_z,gp_a), intent(in) :: W
-    real(8), dimension(1:2,gp_gamma,gp_z,gp_a), intent(in) :: U
-    real(8), dimension(1:2,gp_gamma,gp_z,gp_a), intent(out) :: J
-    real(8), dimension(1:2,gp_gamma,gp_q,gp_z,gp_a), intent(out) :: V
+    real(8), dimension(gp_a,gp_z), intent(in) :: N
+    real(8), dimension(gp_a,gp_z,gp_q), intent(in) :: W
+    real(8), dimension(gp_a,gp_z,gp_gamma,0:1), intent(in) :: U
+    real(8), dimension(gp_a,gp_z,gp_gamma,0:1), intent(out) :: J
+    real(8), dimension(gp_a,gp_z,gp_q,gp_gamma,0:1), intent(out) :: V
 
     do ind_a = 1, gp_a
     do ind_z = 1, gp_z
     do ind_g = 1, gp_gamma
-    do ind_b = 1, 2
-      J(ind_b,ind_g,ind_z,ind_a) = max(U(ind_b,ind_g,ind_z,ind_a), N(ind_z,ind_a))
+    do ind_b = 0, 1
+      J(ind_a,ind_z,ind_g,ind_b) = max(U(ind_a,ind_z,ind_g,ind_b), N(ind_a,ind_z))
       do ind_q = 1, gp_q
-        V(ind_b,ind_g,ind_q,ind_z,ind_a) = max(W(ind_q,ind_z,ind_a),J(ind_b,ind_g,ind_z,ind_a))
+        V(ind_a,ind_z,ind_q,ind_g,ind_b) = max(W(ind_a,ind_z,ind_q),J(ind_a,ind_z,ind_g,ind_b))
       end do
     end do
     end do
