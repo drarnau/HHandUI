@@ -27,7 +27,7 @@ program calibration
 ! SIMULATE THE ECONOMY
   call cpu_time(t_start)
 
-  ! call simulation()
+  call simulation()
 
 
   call cpu_time(t_finish)

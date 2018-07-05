@@ -139,7 +139,7 @@ subroutine ExpectedValues(exp_N, exp_U, exp_W)
       prob_W = prob_N
       do ind_q = 1, gp_q
         exp_W(ind_ap,ind_z,ind_q) = exp_W(ind_ap,ind_z,ind_q) + prob_W*(&
-                        ((1.d0-sigma-lambda_e)*V_vf(ind_ap,ind_zp,ind_qp,ind_gp,0)) + &
+                        ((1.d0-sigma-lambda_e)*V_vf(ind_ap,ind_zp,ind_q,ind_gp,0)) + &
                         (lambda_e*V_vf(ind_ap,ind_zp,max(ind_q,ind_qp),ind_gp,0)) + &
                         (sigma*(1.d0-lambda_u)*J_vf(ind_ap,ind_zp,ind_gp,1)) + &
                         (sigma*lambda_u*V_vf(ind_ap,ind_zp,ind_qp,ind_gp,1)))

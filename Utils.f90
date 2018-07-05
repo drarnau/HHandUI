@@ -249,4 +249,85 @@ CONTAINS
     y_inter = yvector(x0) + ( (yvector(x1)-yvector(x0)) * &
     ((x_inter-xvector(x0))/(xvector(x1)-xvector(x0))))
   end subroutine my_inter
+
+  !===== ROUWENHORST ==============================================================================
+  subroutine rouwenhorst(rho, mu_eps, sigma_eps, n, coverage, zvect, pmat)
+    ! discretizes an ar(1) process, with persistence parameter
+    ! 'rho', mean 'mu_eps' and standard deviation 'sigma_eps'
+    ! stores results in zvect(n) and pmat(n,n)
+    implicit none
+
+    real(8), intent(in):: rho, mu_eps, sigma_eps, coverage
+    integer, intent(in):: n
+    real(8), intent(out):: zvect(n)
+    real(8), intent(out):: pmat(n,n)
+
+    real(8) mu_z, sigma_z, q, eps
+    real(8), allocatable, dimension(:,:):: p1, p2
+    integer status, i, j
+
+    mu_z = mu_eps/(1-rho)
+    sigma_z = sigma_eps/sqrt(1-rho**2)
+
+    q = (rho+1)/2
+    eps = sqrt(dble(n-1)) * sigma_z
+    eps = coverage * sigma_z
+
+    if (n == 1) then
+        pmat = 1.0d0
+        zvect = mu_z
+        return
+    else if (n == 2) then
+        pmat = reshape((/q, 1-q, 1-q, q/),(/2,2/))
+        zvect = (/mu_z-eps,mu_z+eps/)
+        return
+    end if
+
+    allocate(p1(2,2),stat=status)
+    p1 = reshape((/q, 1-q, 1-q, q/),(/2,2/))
+
+    do i=2,n-1
+        allocate(p2(i+1,i+1),stat=status)
+        p2 = q * reshape( (/  (/(p1(:,j),0.0d0 ,j=1,i)/) ,  (/(0.0d0,j=1,i+1)/)    /), (/i+1,i+1/) ) + &
+             (1-q) * reshape( (/  (/(0.0d0,j=1,i+1)/), (/ (p1(:,j),0.0d0 ,j=1,i)/)   /) ,   (/i+1,i+1/) ) + &
+             (1-q) * reshape( (/  (/ (0.0d0,p1(:,j) ,j=1,i) /) ,  (/(0.0d0,j=1,i+1)/)  /), (/i+1,i+1/) ) + &
+             q * reshape( (/ (/(0.0d0,j=1,i+1)/), (/(0.0d0,p1(:,j) ,j=1,i)/)   /) ,   (/i+1,i+1/) )
+
+        p2(2:i,:) = p2(2:i,:)/2
+
+        deallocate(p1,stat=status)
+
+        if (i==n-1) then
+            pmat = p2
+        else
+            allocate(p1(i+1,i+1), stat=status)
+            p1 = p2
+        end if
+
+        deallocate(p2,stat=status)
+    end do
+
+    zvect = (/ (mu_z-eps + (coverage*eps)*i/(n-1),i=0,n-1) /)
+  end subroutine rouwenhorst
+
+  !===== SET SEED =================================================================================
+  subroutine setseed(my_seed)
+    ! sets seed so random numbers
+    ! are the same across model
+    ! simulations
+    !==========================!
+    implicit none
+    integer, optional ,intent(in) :: my_seed
+    integer,allocatable :: seed(:)
+    integer :: the_size,j !,lengthr
+
+    call random_seed(size=the_size) ! how big is the intrisic seed?
+    allocate(seed(the_size))        ! allocate space for seed
+    do j=1,the_size                 ! create the seed
+        seed(j)=abs(my_seed)+(j-1)
+    enddo
+    call random_seed(put=seed)      ! assign the seed
+    deallocate(seed)                ! deallocate space
+
+  end subroutine setseed
 end module Utils
