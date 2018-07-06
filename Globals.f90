@@ -2,9 +2,8 @@ module globals
   implicit none
 
   ! Integer parameters
-  integer, parameter :: gp_a = 48, gp_z = 20, gp_q = 7, gp_gamma = 3, agents = 5000, periods =100001
+  integer, parameter :: gp_a = 48, gp_z = 20, gp_q = 7, gp_gamma = 3, agents = 10000, periods = 20001
 
-  ! Integer matrices
   integer, dimension(:,:), allocatable :: shock_z, shock_q, shock_g, shock_mu
 
   ! Real parameters
@@ -17,7 +16,7 @@ module globals
 
   ! Real vectors
   real(8), dimension(gp_a) :: a_values
-  real(8), dimension(gp_z) :: z_values
+  real(8), dimension(gp_z) :: z_values, z_ssdist
   real(8), dimension(gp_q) :: q_values, q_trans
   real(8), dimension(gp_gamma) :: gamma_values, gamma_trans
 

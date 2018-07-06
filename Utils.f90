@@ -25,13 +25,11 @@ CONTAINS
   end subroutine mytime
 
   !===== LINSPACE =================================================================================
-  subroutine linspace(my_start, my_stop, n, grid)
+  function linspace(my_start, my_stop, n)
     implicit none
-    integer, intent(in) :: n
-    integer :: i
-    real(8), intent(in):: my_start, my_stop
-    real(8) :: step
-    real(8), dimension(n), intent(out) :: grid
+    integer :: n, i
+    real(8) :: my_start, my_stop, step
+    real(8), dimension(n) :: grid, linspace
 
     if (n.eq.1) then
       grid(n) = (my_start+my_stop)/2.d0
@@ -45,16 +43,15 @@ CONTAINS
       end if
       grid(n) = my_stop
     endif
-  end subroutine linspace
+    linspace = grid
+  end function linspace
 
   !===== LOGGRID ==================================================================================
-  subroutine loggrid(my_start, my_stop, n, grid)
+  function loggrid(my_start, my_stop, n)
     implicit none
-    integer, intent(in) :: n
-    integer :: i
-    real(8), intent(in) :: my_start, my_stop
-    real(8) ::step
-    real(8), dimension(n), intent(out) :: grid
+    integer :: n, i
+    real(8) :: my_start, my_stop, step
+    real(8), dimension(n) :: grid, loggrid
 
     if (n.eq.1) then
       grid(n) = (my_start+my_stop)/2.d0
@@ -68,7 +65,8 @@ CONTAINS
       end if
       grid(n) = my_stop
     endif
-  end subroutine loggrid
+    loggrid = grid
+  end function loggrid
 
   !===== TAUCHEN AR(1) DISCRETISATION =============================================================
   subroutine tauchen(rho, sigma, cover, gp, values, trans)
@@ -103,7 +101,7 @@ CONTAINS
     ymin = -ymax        ! lower boundary of state space
     w = (ymax-ymin)/real(gp-1) ! length of interval
 
-    call linspace(ymin, ymax, gp, values)
+    values = linspace(ymin, ymax, gp)
 
     ! Compute transition matrix
     do j = 1, gp
@@ -231,24 +229,23 @@ CONTAINS
   end function my_closest
 
   !===== LINEAR INTERPOLATION =====================================================================
-  subroutine my_inter(xvector,yvector,gp_xy,x_inter,y_inter)
+  real(8) function my_inter(xvector,yvector,gp_xy,x_inter)
     ! For each value in xvector there is an image in yvector
     ! This subroutine interpolate the value for x_inter that
     ! would have in y_vector
     implicit none
-    integer, intent(in) :: gp_xy
-    real(8), dimension(gp_xy), intent(in) :: xvector, yvector
-    real(8), intent(in) :: x_inter
-    real(8), intent(out) :: y_inter
+    integer :: gp_xy
+    real(8), dimension(gp_xy) :: xvector, yvector
+    real(8) :: x_inter
     integer :: x0, x1
 
     ! Find closest values in vector x
     call my_smin(xvector,gp_xy,x_inter,x0,x1)
 
     ! Linear interpolation
-    y_inter = yvector(x0) + ( (yvector(x1)-yvector(x0)) * &
+    my_inter = yvector(x0) + ( (yvector(x1)-yvector(x0)) * &
     ((x_inter-xvector(x0))/(xvector(x1)-xvector(x0))))
-  end subroutine my_inter
+  end function my_inter
 
   !===== ROUWENHORST ==============================================================================
   subroutine rouwenhorst(rho, mu_eps, sigma_eps, n, coverage, zvect, pmat)
@@ -330,4 +327,34 @@ CONTAINS
     deallocate(seed)                ! deallocate space
 
   end subroutine setseed
+
+  !===== STEADY STATE MARKOV CHAIN ================================================================
+  function my_ss(tmatrix,gp)
+    implicit none
+    integer :: gp
+    integer :: row, col, iter
+    real(8) :: aux_sum
+    real(8), dimension(gp) :: my_ss
+    real(8), dimension(gp) :: dist, ndist
+    real(8), dimension(gp,gp) :: tmatrix
+
+    ! Initialise distribution
+    dist = 1.d0/real(gp)
+
+    do iter = 1, 10000
+      ndist = 0.d0
+      do col = 1, gp
+        do row = 1, gp
+          ndist(col) = ndist(col) + (dist(row)*tmatrix(row,col))
+        end do
+      end do
+      aux_sum = sum(abs(ndist-dist))
+      dist = ndist
+      if (aux_sum.lt.1.0d-8) then
+        exit
+      end if
+    end do
+
+    my_ss = dist
+  end function my_ss
 end module Utils

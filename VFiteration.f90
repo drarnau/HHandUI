@@ -188,7 +188,7 @@ CONTAINS
     real(8) :: aux_inter, cons
 
     ! Compute interpolated value for tomorrow
-    call my_inter(a_values, aux_exp, gp_a, ap, aux_inter)
+    aux_inter = my_inter(a_values, aux_exp, gp_a, ap)
 
     ! Compute consumption
     cons = income - ap
@@ -224,7 +224,7 @@ CONTAINS
     real(8) :: aux_inter, cons
 
     ! Compute interpolated value for tomorrow
-    call my_inter(a_values, aux_exp, gp_a, ap, aux_inter)
+    aux_inter = my_inter(a_values, aux_exp, gp_a, ap)
 
     ! Compute consumption
     cons = income - ap
@@ -260,7 +260,7 @@ CONTAINS
     real(8) :: aux_inter, cons
 
     ! Compute interpolated value for tomorrow
-    call my_inter(a_values, aux_exp, gp_a, ap, aux_inter)
+    aux_inter = my_inter(a_values, aux_exp, gp_a, ap)
 
     ! Compute consumption
     cons = income - ap
