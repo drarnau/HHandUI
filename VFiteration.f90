@@ -4,7 +4,7 @@ subroutine VFiteration()
 
   implicit none
 
-  integer, parameter :: maxIter = 10000, showError = 300
+  integer, parameter :: maxIter = 20000, showError = 10000
   real(8), parameter :: tolerance = 1.0d-4
   integer :: iter, ind_a, ind_z, ind_q, ind_g, ind_b
 
@@ -91,6 +91,7 @@ subroutine VFiteration()
     if ((error_N_vf+error_U_vf+error_W_vf+error_J_vf+error_V_vf.lt.tolerance).and.&
         (error_N_pf+error_U_pf+error_W_pf.lt.tolerance)) then
       print *, "Value function iteration finished at iteration:", iter
+      print *, ""
       exit
     elseif (mod(iter,showError).eq.0) then
       print *, "Current value function iteration errors, at iteration:", iter
@@ -102,6 +103,7 @@ subroutine VFiteration()
       print *, "Error for N's policy function is:", error_N_pf
       print *, "Error for U's policy function is:", error_U_pf
       print *, "Error for W's policy function is:", error_W_pf
+      print *, ""
     end if
   end do
 

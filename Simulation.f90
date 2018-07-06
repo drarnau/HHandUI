@@ -5,7 +5,7 @@ subroutine simulation()
   implicit none
 
   integer, parameter :: sim_gp_a = 1000
-  integer :: ind_ag, ind_p, ind_z, ind_q, ind_g, ind_b
+  integer :: ind_ag, ind_p, ind_z, ind_q, ind_g, ind_b, reps
   integer, dimension(agents) :: LMstatus, new_LMstatus, entitled, new_entitled, assets, new_assets
   integer, dimension(sim_gp_a,gp_z) :: sim_N_pf
   integer, dimension(sim_gp_a,gp_z,gp_q) :: sim_W_pf
@@ -42,34 +42,21 @@ subroutine simulation()
   entitled = 0
   new_entitled = -1
 
-  ! ----------
-  open(unit = 71, file = "employment_rate.txt")
-  open(unit = 72, file = "unemployment_rate.txt")
-  open(unit = 73, file = "share_OLF.txt")
-  open(unit = 74, file = "transitions.txt")
-  open(unit = 75, file = "sum_assets.txt")
-  open(unit = 76, file = "sum_z.txt")
-  open(unit = 77, file = "sum_income.txt")
-  open(unit = 78, file = "sum_taxrev.txt")
-  open(unit = 79, file = "sum_bpaid.txt")
-  open(unit = 80, file = "sum_entitled.txt")
-  open(unit = 81, file = "sum_q.txt")
-  ! ----------
+  ! Initialise macro variables to 0
+  employed = 0.d0
+  unemployed = 0.d0
+  OLF = 0.d0
+  tot_labincome = 0.d0
+  tot_income = 0.d0
+  tot_taxrev = 0.d0
+  tot_bpaid = 0.d0
+  tot_assets = 0.d0
+  tot_z = 0.d0
+  tot_q = 0.d0
+  trans = 0.d0
+  reps = 0
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
-    ! Initialise macro variables to 0
-    employed = 0.d0
-    unemployed = 0.d0
-    OLF = 0.d0
-    tot_labincome = 0.d0
-    tot_income = 0.d0
-    tot_taxrev = 0.d0
-    tot_bpaid = 0.d0
-    tot_assets = 0.d0
-    tot_z = 0.d0
-    tot_q = 0.d0
-    trans = 0.d0
-
   do ind_ag = 1, agents
     ! Initialise aux variables to 0
     income = 0.d0
@@ -85,8 +72,6 @@ subroutine simulation()
 
     ! Employed
     if (LMstatus(ind_ag).eq.1) then
-      ! Register labor market status
-      employed = employed + 1.d0
       ! Benefits - none
       ! Labor income
       labincome = wage*z*q
@@ -131,8 +116,6 @@ subroutine simulation()
 
     ! Unemployed
     elseif (LMstatus(ind_ag).eq.2) then
-      ! Register labor market status
-      unemployed = unemployed + 1.d0
       ! Benefits
       bpaid = real(entitled(ind_ag))*(benefits(z))
       ! Next period benefits
@@ -165,8 +148,6 @@ subroutine simulation()
 
     ! OLF
     elseif (LMstatus(ind_ag).eq.3) then
-      ! Register labor market status
-      OLF = OLF + 1.d0
       ! Benefits - None
       new_entitled(ind_ag) = 0
       ! Labor income - None
@@ -192,57 +173,60 @@ subroutine simulation()
     end if
 
     ! Add to totals
-    tot_income = tot_income + income
-    tot_labincome = tot_labincome + labincome
-    tot_taxrev = tot_taxrev + taxrev
-    tot_bpaid = tot_bpaid + bpaid
-    tot_assets = tot_assets + a
-    tot_z = tot_z + z
-    tot_q = tot_q + q
-    trans(LMstatus(ind_ag),new_LMstatus(ind_ag)) = &
-        trans(LMstatus(ind_ag),new_LMstatus(ind_ag)) + 1.d0
+    if (ind_p.ge.(periods/2)) then
+      tot_income = tot_income + income
+      tot_labincome = tot_labincome + labincome
+      tot_taxrev = tot_taxrev + taxrev
+      tot_bpaid = tot_bpaid + bpaid
+      tot_assets = tot_assets + a
+      trans(LMstatus(ind_ag),new_LMstatus(ind_ag)) = &
+          trans(LMstatus(ind_ag),new_LMstatus(ind_ag)) + 1.d0
+      ! Add to totals relevant for employed
+      if (LMstatus(ind_ag).eq.1) then
+        ! Register labor market status
+        employed = employed + 1.d0
+        tot_z = tot_z + z
+        tot_q = tot_q + q
+      elseif(LMstatus(ind_ag).eq.2) then
+        ! Register labor market status
+        unemployed = unemployed + 1.d0
+      else
+        ! Register labor market status
+        OLF = OLF + 1.d0
+      end if
+    end if
   end do
-    ! Compute errors
-    ! Check convergence
+    if (ind_p.ge.(periods/2)) then
+      reps = reps + 1
+    end if
     ! Update variables
     assets = new_assets
     LMstatus = new_LMstatus
     entitled = new_entitled
-
-    ! ------------------
-    write(71,*) employed/real(agents)
-    write(72,*) unemployed/(employed+unemployed)
-    write(73,*) OLF/real(agents)
-    write(74,*) trans(1,:)/sum(trans(1,:)), trans(2,:)/sum(trans(2,:)), trans(3,:)/sum(trans(3,:))
-    write(75,*) tot_assets
-    write(76,*) tot_z
-    write(77,*) tot_income
-    write(78,*) tot_taxrev
-    write(79,*) tot_bpaid
-    write(80,*) sum(real(entitled))
-    write(81,*) tot_q
   end do
 
-  close(71)
-  close(72)
-  close(73)
-  close(74)
-  close(75)
-  close(76)
-  close(77)
-  close(78)
-  close(79)
-  close(80)
-  close(81)
+  ! Compute averages
+  tot_income = tot_income/real(reps)
+  tot_labincome = tot_labincome/real(reps)
+  tot_taxrev = tot_taxrev/real(reps)
+  tot_bpaid = tot_bpaid/real(reps)
+  tot_assets = tot_assets/real(reps)
+  tot_z = tot_z/real(reps)
+  tot_q = tot_q/real(reps)
+  employed = employed/real(reps)
+  unemployed = unemployed/real(reps)
+  OLF = OLF/real(reps)
 
-  ! Print results
-  print *, "Transition:"
-  print '(3f7.4)', trans(1,:)/sum(trans(1,:))
-  print '(3f7.4)', trans(2,:)/sum(trans(2,:))
-  print '(3f7.4)', trans(3,:)/sum(trans(3,:))
-  print *, "Employment rate:", employed/real(agents)
-  print *, "Unemployment rate:", unemployed/(employed+unemployed)
-  print *, "Share OLF:", OLF/real(agents)
+  ! Compute results
+  new_KLratio = tot_assets/tot_z
+  new_average_z = tot_z/employed
+  new_T = (tot_taxrev-tot_bpaid)/real(agents)
+  Erate = employed/real(agents)
+  Urate = unemployed/(employed+unemployed)
+  Nrate = OLF/real(agents)
+  transitions(1, :) = trans(1,:)/sum(trans(1,:))
+  transitions(2, :) = trans(2,:)/sum(trans(2,:))
+  transitions(3, :) = trans(3,:)/sum(trans(3,:))
 
 CONTAINS
   !----- CHOICE V ---------------------------------------------------------------------------------

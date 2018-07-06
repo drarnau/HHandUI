@@ -12,7 +12,8 @@ module globals
 
   ! Real variables
   real(8) :: alpha, beta, gamma_bar, epsilon_gamma, rho_z, sigma_epsilon, sigma_q, lambda_e, &
-  lambda_u, lambda_n, sigma, mu, b_0, b_bar, theta, delta, tau, int_rate, wage, KLratio, average_z, T
+  lambda_u, lambda_n, sigma, mu, b_0, b_bar, theta, delta, tau, int_rate, wage, &
+  KLratio, average_z, T, new_KLratio, new_average_z, new_T, Erate, Urate, Nrate
 
   ! Real vectors
   real(8), dimension(gp_a) :: a_values
@@ -22,6 +23,7 @@ module globals
 
   ! Real matrices
   real(8), dimension(:,:), allocatable :: shock_lm
+  real(8), dimension(3,3) :: transitions
   real(8), dimension(gp_z,gp_z) :: z_trans
   real(8), dimension(0:1, 0:1) :: IB_trans
   real(8), dimension(gp_a,gp_z) :: N_vf, N_pf

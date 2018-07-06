@@ -44,8 +44,8 @@ subroutine initialisation()
   a_values = loggrid(min_a, max_a, gp_a)
 
   ! Productivity process
-  call rouwenhorst(rho_z, 0.d0, sigma_epsilon, gp_z, cover_z, z_values, z_trans)
-  ! call tauchen(rho_z, sigma_epsilon, cover_z, gp_z, z_values, z_trans)
+  ! call rouwenhorst(rho_z, 0.d0, sigma_epsilon, gp_z, cover_z, z_values, z_trans)
+  call tauchen(rho_z, sigma_epsilon, cover_z, gp_z, z_values, z_trans)
   z_values = exp(z_values)
   z_ssdist = my_ss(z_trans,gp_z)
   call realise_shocks(agents, periods, z_trans, gp_z, shock_z)
