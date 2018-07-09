@@ -7,5 +7,5 @@
 0.034     ! Standard deviation match quality process
 0.121     ! Probability of finding another job for employed agents
 0.278     ! Probability of finding a job for unemployed agents
-0.182     ! Probability of finding a job for OLD agents
+0.182     ! Probability of finding a job for OLF agents
 0.0178    ! Probability of losing a job for employed agents

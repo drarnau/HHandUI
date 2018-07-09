@@ -3,7 +3,7 @@ program calibration
   use Utils
   implicit none
 
-  integer, parameter :: maxIter = 100
+  integer, parameter :: maxIter = 1
   integer :: iter
   real(8), parameter :: adj_KL = 0.5d0, adj_T = 0.5d0, adj_avgz = 0.5d0, &
                         tol_KL = 0.01, tol_T = 1.0d-4, tol_avgz = 0.001
@@ -44,6 +44,13 @@ program calibration
     error_T = abs(T-new_T)
     error_avgz = abs(average_z-new_average_z)
 
+    ! Print current situation
+    print *, "Current equilibirum errors, at iteration:", iter
+    print '(a,3f9.4)', "  KL ratio (old new error): ", KLratio, new_KLratio, error_KL
+    print '(a,3f9.4)', "  T (old new error):        ", T, new_T, error_T
+    print '(a,3f9.4)', "  Average z (old new error):", average_z, new_average_z, error_avgz
+    print *, ""
+
     ! Update equilibrium values
     KLratio = adj_KL*new_KLratio + (1.d0-adj_KL)*KLratio
     T = adj_T*new_T + (1.d0-adj_T)*T
@@ -54,12 +61,6 @@ program calibration
       print *, "Equilibirum reached at iteration:", iter
       print *, ""
       exit
-    else
-      print *, "Current equilibirum errors, at iteration:", iter
-      print '(a,3f9.4)', "  KL ratio (old new error): ", KLratio, new_KLratio, error_KL
-      print '(a,3f9.4)', "  T (old new error):        ", T, new_T, error_T
-      print '(a,3f9.4)', "  Average z (old new error):", average_z, new_average_z, error_avgz
-      print *, ""
     end if
 
   end do

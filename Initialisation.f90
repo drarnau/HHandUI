@@ -71,12 +71,12 @@ subroutine initialisation()
   IB_trans(0,0) = 1.d0
 
   ! Guess inital prices
-  KLratio = 129.314057
+  KLratio = 119.60
   call Prices(KLratio, int_rate, wage)
 
   ! Guess average z and T
-  average_z = 2.5674
-  T = 1.40182
+  average_z = 2.33
+  T = 1.28
 
   ! Generate shocks
   call random_number(shock_lm)
