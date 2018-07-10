@@ -1,18 +1,21 @@
-subroutine simulation()
+subroutine SimSingles(mysex)
   use Globals
+  use GlobalsSingles
   use Utils
 
   implicit none
 
+  integer, intent(in) :: mysex
   integer, parameter :: sim_gp_a = 1000
-  integer :: ind_ag, ind_p, ind_z, ind_q, ind_g, ind_b, reps
+  integer :: ind_ag, ind_p, ind_z, ind_g, ind_b, reps
   integer, dimension(agents) :: LMstatus, new_LMstatus, entitled, new_entitled, assets, new_assets
-  integer, dimension(sim_gp_a,gp_z) :: sim_N_pf
-  integer, dimension(sim_gp_a,gp_z,gp_q) :: sim_W_pf
+  integer, dimension(agents,periods) :: myshock_z, myshock_g
+  integer, dimension(sim_gp_a,gp_z) :: sim_N_pf, sim_W_pf
   integer, dimension(sim_gp_a,gp_z,gp_gamma,0:1) :: sim_U_pf
   real(8) :: employed, unemployed, OLF, tot_labincome, tot_income, tot_taxrev, tot_bpaid, &
-             tot_assets, tot_z, tot_q, income, a, a_income, labincome, taxrev, bpaid, z, q, ap
+             tot_assets, tot_z, income, a, a_income, labincome, taxrev, bpaid, z, ap
   real(8), dimension(sim_gp_a) :: sim_a_values
+  real(8), dimension(gp_z) :: aux_vec
   real(8), dimension(3,3) :: trans
 
   ! Create grid of assets for the simulation (easier to determine if distribution is statinary)
@@ -21,9 +24,7 @@ subroutine simulation()
   ! Reshape decision rules with new grid
   do ind_z = 1, gp_z
     sim_N_pf(:,ind_z) = regrid(gp_a,a_values,N_pf(:,ind_z),sim_gp_a,sim_a_values)
-    do ind_q = 1, gp_q
-      sim_W_pf(:,ind_z,ind_q) = regrid(gp_a,a_values,W_pf(:,ind_z,ind_q),sim_gp_a,sim_a_values)
-    end do
+    sim_W_pf(:,ind_z) = regrid(gp_a,a_values,W_pf(:,ind_z),sim_gp_a,sim_a_values)
     do ind_g = 1, gp_gamma
     do ind_b = 0, 1
       sim_U_pf(:,ind_z,ind_g,ind_b) = regrid(gp_a,a_values,U_pf(:,ind_z,ind_g,ind_b),&
@@ -42,6 +43,10 @@ subroutine simulation()
   entitled = 0
   new_entitled = -1
 
+  ! Initialise myshocks
+  myshock_z = -1
+  myshock_g = -1
+
   ! Initialise macro variables to 0
   employed = 0.d0
   unemployed = 0.d0
@@ -52,7 +57,6 @@ subroutine simulation()
   tot_bpaid = 0.d0
   tot_assets = 0.d0
   tot_z = 0.d0
-  tot_q = 0.d0
   trans = 0.d0
   reps = 0
 
@@ -64,53 +68,60 @@ subroutine simulation()
     taxrev = 0.d0
     bpaid = 0.d0
 
+    ! Assign shocks
+    if (ind_p.eq.1) then
+      aux_vec = z_ssdist
+      myshock_z(ind_ag,ind_p) = realise(shock_z(ind_ag,ind_p),z_ssdist,gp_z)
+      myshock_g(ind_ag,ind_p) = realise(shock_g(ind_ag,ind_p),gamma_trans, gp_gamma)
+    end if
+    aux_vec = z_trans(myshock_z(ind_ag,ind_p),:)
+    myshock_z(ind_ag,ind_p+1) = realise(shock_z(ind_ag,ind_p),aux_vec,gp_z)
+    myshock_g(ind_ag,ind_p+1) = realise(shock_g(ind_ag,ind_p),gamma_trans, gp_gamma)
+
+
+
     ! Quantify shocks
     a = sim_a_values(assets(ind_ag))
     a_income = (1.d0+int_rate)*a + T ! CAREFUL: Lump-sum transfer already added here
-    z = z_values(shock_z(ind_ag,ind_p))
-    q = q_values(shock_q(ind_ag,ind_p))
+    z = z_values(myshock_z(ind_ag,ind_p))
 
     ! Employed
     if (LMstatus(ind_ag).eq.1) then
       ! Benefits - none
       ! Labor income
-      labincome = wage*z*q
+      labincome = wage*z
       ! Tax revenue
       taxrev = tau*labincome
 
       ! Assets next period
-      new_assets(ind_ag) = sim_W_pf(assets(ind_ag),shock_z(ind_ag,ind_p),shock_q(ind_ag,ind_p))
+      new_assets(ind_ag) = sim_W_pf(assets(ind_ag),myshock_z(ind_ag,ind_p))
       ap = sim_a_values(new_assets(ind_ag))
 
       ! Income/consumption
-      income = a_income + (1.d0-tau)*wage*z*q - ap
+      income = a_income + (1.d0-tau)*wage*z - ap
 
       ! LM status next period
       if (shock_lm(ind_ag,ind_p).le.lambda_e) then ! New offer
-        ! Update value of q next period
-        shock_q(ind_ag,ind_p+1) = max(shock_q(ind_ag,ind_p),shock_q(ind_ag,ind_p+1))
         ! Update entitlement next period
         new_entitled(ind_ag) = 0
-        new_LMstatus(ind_ag) = choice_V(ap,shock_z(ind_ag,ind_p+1),shock_q(ind_ag,ind_p+1),&
-                                        shock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
+        new_LMstatus(ind_ag) = choice_V(ap,myshock_z(ind_ag,ind_p+1),&
+                                        myshock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
       elseif ((shock_lm(ind_ag,ind_p).gt.lambda_e).and.&
               (shock_lm(ind_ag,ind_p).le.(1.d0-sigma))) then ! No fired, no new offer
-        ! Update value of q next period
-        shock_q(ind_ag,ind_p+1) = shock_q(ind_ag,ind_p+1)
         ! Update entitlement next period
         new_entitled(ind_ag) = 0
-        new_LMstatus(ind_ag) = choice_V(ap,shock_z(ind_ag,ind_p+1),shock_q(ind_ag,ind_p+1),&
-                                        shock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
+        new_LMstatus(ind_ag) = choice_V(ap,myshock_z(ind_ag,ind_p+1),&
+                                        myshock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
       elseif ((shock_lm(ind_ag,ind_p).gt.(1.d0-sigma)).and.&
               (shock_lm(ind_ag,ind_p).le.(1.d0-sigma+(lambda_u*sigma)))) then ! Fired, new offer
         ! Update entitlement next period
         new_entitled(ind_ag) = 1
-        new_LMstatus(ind_ag) = choice_V(ap,shock_z(ind_ag,ind_p+1),shock_q(ind_ag,ind_p+1),&
-                                        shock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
+        new_LMstatus(ind_ag) = choice_V(ap,myshock_z(ind_ag,ind_p+1),&
+                                        myshock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
       else ! Fired no new offer
         ! Update entitlement next period
         new_entitled(ind_ag) = 1
-        new_LMstatus(ind_ag) = choice_J(ap,shock_z(ind_ag,ind_p+1),shock_g(ind_ag,ind_p+1),&
+        new_LMstatus(ind_ag) = choice_J(ap,myshock_z(ind_ag,ind_p+1),myshock_g(ind_ag,ind_p+1),&
                                         new_entitled(ind_ag))
       end if
 
@@ -130,7 +141,7 @@ subroutine simulation()
       taxrev = tau*bpaid
 
       ! Assets next period
-      new_assets(ind_ag) = sim_U_pf(assets(ind_ag),shock_z(ind_ag,ind_p),shock_g(ind_ag,ind_p),&
+      new_assets(ind_ag) = sim_U_pf(assets(ind_ag),myshock_z(ind_ag,ind_p),myshock_g(ind_ag,ind_p),&
                                     entitled(ind_ag))
       ap = sim_a_values(new_assets(ind_ag))
 
@@ -139,10 +150,10 @@ subroutine simulation()
 
       ! LM status next period
       if (shock_lm(ind_ag,ind_p).le.lambda_u) then ! Job offer received
-        new_LMstatus(ind_ag) = choice_V(ap,shock_z(ind_ag,ind_p+1),shock_q(ind_ag,ind_p+1),&
-                                        shock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
+        new_LMstatus(ind_ag) = choice_V(ap,myshock_z(ind_ag,ind_p+1),&
+                                        myshock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
       else ! NO Job offer received
-        new_LMstatus(ind_ag) = choice_J(ap,shock_z(ind_ag,ind_p+1),shock_g(ind_ag,ind_p+1),&
+        new_LMstatus(ind_ag) = choice_J(ap,myshock_z(ind_ag,ind_p+1),myshock_g(ind_ag,ind_p+1),&
                                         new_entitled(ind_ag))
       end if
 
@@ -154,7 +165,7 @@ subroutine simulation()
       ! Tax revenue - None
 
       ! Assets next period
-      new_assets(ind_ag) = sim_N_pf(assets(ind_ag),shock_z(ind_ag,ind_p))
+      new_assets(ind_ag) = sim_N_pf(assets(ind_ag),myshock_z(ind_ag,ind_p))
       ap = sim_a_values(new_assets(ind_ag))
 
       ! Income/consumption
@@ -162,10 +173,10 @@ subroutine simulation()
 
       ! LM status next period
       if (shock_lm(ind_ag,ind_p).le.lambda_n) then ! Job offer received
-        new_LMstatus(ind_ag) = choice_V(ap,shock_z(ind_ag,ind_p+1),shock_q(ind_ag,ind_p+1),&
-                                        shock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
+        new_LMstatus(ind_ag) = choice_V(ap,myshock_z(ind_ag,ind_p+1),&
+                                        myshock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
       else ! NO Job offer received
-        new_LMstatus(ind_ag) = choice_J(ap,shock_z(ind_ag,ind_p+1),shock_g(ind_ag,ind_p+1),&
+        new_LMstatus(ind_ag) = choice_J(ap,myshock_z(ind_ag,ind_p+1),myshock_g(ind_ag,ind_p+1),&
                                         new_entitled(ind_ag))
       end if
     else
@@ -186,7 +197,6 @@ subroutine simulation()
         ! Register labor market status
         employed = employed + 1.d0
         tot_z = tot_z + z
-        tot_q = tot_q + q
       elseif(LMstatus(ind_ag).eq.2) then
         ! Register labor market status
         unemployed = unemployed + 1.d0
@@ -212,27 +222,26 @@ subroutine simulation()
   tot_bpaid = tot_bpaid/real(reps)
   tot_assets = tot_assets/real(reps)
   tot_z = tot_z/real(reps)
-  tot_q = tot_q/real(reps)
   employed = employed/real(reps)
   unemployed = unemployed/real(reps)
   OLF = OLF/real(reps)
 
   ! Compute results
-  new_KLratio = tot_assets/tot_z
-  new_average_z = tot_z/employed
-  new_T = (tot_taxrev-tot_bpaid)/real(agents)
-  Erate = employed/real(agents)
-  Urate = unemployed/(employed+unemployed)
-  Nrate = OLF/real(agents)
-  transitions(1, :) = trans(1,:)/sum(trans(1,:))
-  transitions(2, :) = trans(2,:)/sum(trans(2,:))
-  transitions(3, :) = trans(3,:)/sum(trans(3,:))
+  aux_KLratio(0,mysex) = tot_assets/tot_z
+  aux_average_z(0,mysex) = tot_z/employed
+  aux_T(0,mysex) = (tot_taxrev-tot_bpaid)/real(agents)
+  Erate(0,mysex) = employed/real(agents)
+  Urate(0,mysex) = unemployed/(employed+unemployed)
+  Nrate(0,mysex) = OLF/real(agents)
+  transitions(0,mysex,1, :) = trans(1,:)/sum(trans(1,:))
+  transitions(0,mysex,2, :) = trans(2,:)/sum(trans(2,:))
+  transitions(0,mysex,3, :) = trans(3,:)/sum(trans(3,:))
 
 CONTAINS
   !----- CHOICE V ---------------------------------------------------------------------------------
-  integer function choice_V(val_a,ind_z,ind_q,ind_g,ind_b)
+  integer function choice_V(val_a,ind_z,ind_g,ind_b)
     implicit none
-    integer :: ind_z, ind_q, ind_g, ind_b
+    integer :: ind_z, ind_g, ind_b
     real(8) :: val_a
     real(8), dimension(1:3) :: aux_choice
 
@@ -243,7 +252,7 @@ CONTAINS
     aux_choice(2) = my_inter(a_values,U_vf(:,ind_z,ind_g,ind_b),gp_a,val_a)
 
     ! Interpolate value of being employed
-    aux_choice(1) = my_inter(a_values,W_vf(:,ind_z,ind_q),gp_a,val_a)
+    aux_choice(1) = my_inter(a_values,W_vf(:,ind_z),gp_a,val_a)
 
     choice_V = maxloc(aux_choice, dim=1)
   end function choice_V
@@ -295,4 +304,19 @@ CONTAINS
 
     regrid = pf_new
   end function regrid
-end subroutine simulation
+
+  !----- REALISE SHOCK ----------------------------------------------------------------------------
+  integer function realise(shock, myvec, gp)
+    implicit none
+    integer :: gp, ind_sh
+    real(8) :: shock, aux_sum
+    real(8), dimension(gp) :: myvec
+
+    aux_sum = 0.d0
+    do ind_sh = 1, gp
+      aux_sum  = aux_sum + myvec(ind_sh)
+      if (aux_sum.ge.shock) exit
+    end do
+    realise = ind_sh
+  end function realise
+end subroutine SimSingles

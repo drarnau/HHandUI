@@ -1,20 +1,19 @@
-subroutine VFiteration()
+subroutine VFSingles()
   use Globals
+  use GlobalsSingles
   use Utils
 
   implicit none
 
-  integer, parameter :: maxIter = 20000, showError = 10000
+  integer, parameter :: maxIter = 20000, showError = 500
   real(8), parameter :: tolerance = 1.0d-4
-  integer :: iter, ind_a, ind_z, ind_q, ind_g, ind_b
+  integer :: iter, ind_a, ind_z, ind_g, ind_b
 
   real(8) :: error_N_vf, error_U_vf, error_W_vf, error_J_vf, error_V_vf, error_N_pf, error_U_pf, error_W_pf
 
-  real(8), dimension(gp_a,gp_z) :: new_N_vf, new_N_pf, exp_N
+  real(8), dimension(gp_a,gp_z) :: new_N_vf, new_N_pf, exp_N, new_W_vf, new_W_pf, exp_W
   real(8), dimension(gp_a,gp_z,0:1) :: exp_U
-  real(8), dimension(gp_a,gp_z,gp_q) :: new_W_vf, new_W_pf, exp_W
-  real(8), dimension(gp_a,gp_z,gp_gamma,0:1) :: new_U_vf, new_J_vf, new_U_pf
-  real(8), dimension(gp_a,gp_z,gp_q,gp_gamma,0:1) :: new_V_vf
+  real(8), dimension(gp_a,gp_z,gp_gamma,0:1) :: new_U_vf, new_J_vf, new_U_pf, new_V_vf
 
   ! Guess a value for global value functions
   call random_number(N_vf) ! Assign random numbers to N_vf
@@ -48,13 +47,10 @@ subroutine VFiteration()
     do ind_a = 1, gp_a
     do ind_z = 1, gp_z
       call value_N(ind_a, exp_N(:,ind_z), new_N_pf(ind_a,ind_z), new_N_vf(ind_a,ind_z))
+      call value_W(ind_a, ind_z, exp_W(:,ind_z), &
+                    new_W_pf(ind_a,ind_z), new_W_vf(ind_a,ind_z))
 
-      do ind_q = 1, gp_q
-        call value_W(ind_a, ind_z, ind_q, exp_W(:,ind_z,ind_q), &
-                    new_W_pf(ind_a,ind_z,ind_q), new_W_vf(ind_a,ind_z,ind_q))
-      end do
-
-      do ind_b = 0,1
+      do ind_b = 0, 1
         do ind_g = 1, gp_gamma
           call value_U(ind_a, ind_z, ind_g, ind_b, exp_U(:,ind_z,ind_b), &
                       new_U_pf(ind_a,ind_z,ind_g,ind_b), new_U_vf(ind_a,ind_z,ind_g,ind_b))
@@ -107,18 +103,18 @@ subroutine VFiteration()
     end if
   end do
 
-end subroutine VFiteration
+end subroutine VFSingles
 
 !===== EXPECTED VALUES ============================================================================
 subroutine ExpectedValues(exp_N, exp_U, exp_W)
   ! Computes auxiliary vector to store the expected value for each level of assets tomorrow
   use Globals
+  use GlobalsSingles
   implicit none
-  integer :: ind_z, ind_q, ind_b, ind_ap, ind_zp, ind_qp, ind_gp, ind_bp
+  integer :: ind_z, ind_b, ind_ap, ind_zp, ind_gp, ind_bp
   real(8) :: prob_N, prob_U, prob_W
-  real(8), dimension(gp_a,gp_z), intent(out) :: exp_N
+  real(8), dimension(gp_a,gp_z), intent(out) :: exp_N, exp_W
   real(8), dimension(gp_a,gp_z,0:1), intent(out) :: exp_U
-  real(8), dimension(gp_a,gp_z,gp_q), intent(out) :: exp_W
 
   ! Initialise arrays to 0
   exp_N = 0.d0
@@ -130,33 +126,29 @@ subroutine ExpectedValues(exp_N, exp_U, exp_W)
     ! Iterate over all values of assets, z, q, and gammas tomorrow
     do ind_ap = 1, gp_a
     do ind_zp = 1, gp_z
-    do ind_qp = 1, gp_q
     do ind_gp = 1, gp_gamma
-      prob_N = z_trans(ind_z,ind_zp)*q_trans(ind_qp)*gamma_trans(ind_gp)
+      prob_N = z_trans(ind_z,ind_zp)*gamma_trans(ind_gp)
       exp_N(ind_ap,ind_z) = exp_N(ind_ap,ind_z) + prob_N*(&
-                      (lambda_n*V_vf(ind_ap,ind_zp,ind_qp,ind_gp,0)) + &
+                      (lambda_n*V_vf(ind_ap,ind_zp,ind_gp,0)) + &
                       ((1.d0-lambda_n)*J_vf(ind_ap,ind_zp,ind_gp,0)))
 
       ! Iterate over values of match quality TODAY
       prob_W = prob_N
-      do ind_q = 1, gp_q
-        exp_W(ind_ap,ind_z,ind_q) = exp_W(ind_ap,ind_z,ind_q) + prob_W*(&
-                        ((1.d0-sigma-lambda_e)*V_vf(ind_ap,ind_zp,ind_q,ind_gp,0)) + &
-                        (lambda_e*V_vf(ind_ap,ind_zp,max(ind_q,ind_qp),ind_gp,0)) + &
+      exp_W(ind_ap,ind_z) = exp_W(ind_ap,ind_z) + prob_W*(&
+                        ((1.d0-sigma-lambda_e)*V_vf(ind_ap,ind_zp,ind_gp,0)) + &
+                        (lambda_e*V_vf(ind_ap,ind_zp,ind_gp,0)) + &
                         (sigma*(1.d0-lambda_u)*J_vf(ind_ap,ind_zp,ind_gp,1)) + &
-                        (sigma*lambda_u*V_vf(ind_ap,ind_zp,ind_qp,ind_gp,1)))
-      end do
+                        (sigma*lambda_u*V_vf(ind_ap,ind_zp,ind_gp,1)))
 
       ! Iterate over values of UI TODAY and TOMORROW
       do ind_b = 0, 1
       do ind_bp = 0, 1
         prob_U = prob_W*IB_trans(ind_b,ind_bp)
         exp_U(ind_ap,ind_z,ind_b) = exp_U(ind_ap,ind_z,ind_b) + prob_U*(&
-                        (lambda_u*V_vf(ind_ap,ind_zp,ind_qp,ind_gp,ind_bp)) + &
+                        (lambda_u*V_vf(ind_ap,ind_zp,ind_gp,ind_bp)) + &
                         ((1.d0-lambda_u)*J_vf(ind_ap,ind_zp,ind_gp,ind_bp)))
       end do
       end do
-    end do
     end do
     end do
     end do
@@ -166,6 +158,7 @@ end subroutine ExpectedValues
 !===== OLF ========================================================================================
 subroutine value_N(ind_a, aux_exp, pf, vf)
   use Globals
+  use GlobalsSingles
   use Utils
   implicit none
 
@@ -200,18 +193,19 @@ CONTAINS
 end subroutine value_N
 
 !===== EMPLOYED ===================================================================================
-subroutine value_W(ind_a, ind_z, ind_q, aux_exp, pf, vf)
+subroutine value_W(ind_a, ind_z, aux_exp, pf, vf)
   use Globals
+  use GlobalsSingles
   use Utils
   implicit none
 
-  integer, intent(in) :: ind_a, ind_z, ind_q
+  integer, intent(in) :: ind_a, ind_z
   real(8) :: aux_max_a, income
   real(8), dimension(gp_a), intent(in) :: aux_exp
   real(8), intent(out) :: pf, vf
 
   ! Compute income
-  income = (1.d0+int_rate)*a_values(ind_a) + T + (1.d0-tau)*wage*z_values(ind_z)*q_values(ind_q)
+  income = (1.d0+int_rate)*a_values(ind_a) + T + (1.d0-tau)*wage*z_values(ind_z)
 
   ! Compute upper bound for assets
   aux_max_a = min(max_a-tiny, max(min_a, income))
@@ -238,6 +232,7 @@ end subroutine value_W
 !===== EMPLOYED ===================================================================================
 subroutine value_U(ind_a, ind_z, ind_g, ind_b, aux_exp, pf, vf)
   use Globals
+  use GlobalsSingles
   use Utils
   implicit none
 

@@ -3,4 +3,8 @@
 0.465                 ! Benefits cap
 0.3                   ! Capital share of output in aggregate production function
 0.0067                ! Capital depreciation
-0.3                   ! Proportional tax on labor income
+0.3                   ! Proportional tax on labour income
+0.25                  ! Share of single males in the economy
+0.25                  ! Share of single females in the economy
+0.25                  ! Share of married males in the economy
+0.25                  ! Share of married females in the economy

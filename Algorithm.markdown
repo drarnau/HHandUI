@@ -29,3 +29,6 @@ There are three types of parameters (mutually exclusive categories):
 
 ## Dictionary of implementation names to model names
 - `beta` is β: Discount factor of households.
+
+## To do-list
+- [] Results printed to txt files.

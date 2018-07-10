@@ -4,10 +4,7 @@ subroutine initialisation()
 
   implicit none
 
-  real(8), dimension(gp_q, gp_q) :: aux_q
-
   allocate(shock_z(agents,periods))
-  allocate(shock_q(agents,periods))
   allocate(shock_g(agents,periods))
   allocate(shock_mu(agents,periods))
   allocate(shock_lm(agents,periods))
@@ -23,10 +20,54 @@ subroutine initialisation()
   read(1,*) theta ! Capital share of output in aggregate production function
   read(1,*) delta ! Capital depreciation
   read(1,*) tau   ! Proportional tax on labor income
+  read(1,*) weights(single,male) ! Share of single males in the economy
+  read(1,*) weights(single,female) ! Share of single females in the economy
+  read(1,*) weights(married,male) ! Share of married males in the economy
+  read(1,*) weights(married,female) ! Share of married females in the economy
   close(1)
 
+  ! Check weights add up to 1
+  if (abs(sum(weights)-1.d0).gt.tiny) then
+    print *, "ERROR: Weights in assigned.txt o NOT add up to 1"
+  end if
+
+  ! UI process, 1: Entilted, 0: Not entailted
+  IB_trans(1,1) = 1.d0 - mu
+  IB_trans(1,0) = mu
+  IB_trans(0,1) = 0.d0
+  IB_trans(0,0) = 1.d0
+
+  ! Guess inital prices
+  KLratio = 119.60
+  call Prices(KLratio, int_rate, wage)
+
+  ! Guess average z and T
+  average_z = 2.33
+  T = 1.28
+
+  ! Generate shocks
+  call random_number(shock_z)
+  call random_number(shock_g)
+  call realise_iid(agents, periods, mu, shock_mu)
+  call random_number(shock_lm)
+end subroutine initialisation
+
+!===== SINGLES INITIALISATION =====================================================================
+subroutine iniSingles(myidentity)
+  use Globals
+  use GlobalsSingles
+  use Utils
+
+  implicit none
+
+  character(len=2), intent(in) :: myidentity
+  character(len=1024) :: format_string, aux_name
+
   ! Calibrated
-  open(unit=2, file='calibrated.txt')
+  ! Name file
+  format_string = "(A11,A2,A4)"
+  write (aux_name,format_string), "calibrated_", myidentity, ".txt"
+  open(unit=2, file = aux_name)
   read(2,*) alpha           ! Utility cost of working
   read(2,*) beta            ! Discount factor
   read(2,*) gamma_bar       ! Average search cost
@@ -48,80 +89,13 @@ subroutine initialisation()
   call tauchen(rho_z, sigma_epsilon, cover_z, gp_z, z_values, z_trans)
   z_values = exp(z_values)
   z_ssdist = my_ss(z_trans,gp_z)
-  call realise_shocks(agents, periods, z_trans, gp_z, shock_z)
-
-  ! Match quality process
-  call rouwenhorst(0.d0, 0.d0, sigma_q, gp_q, cover_q, q_values, aux_q)
-  q_values = exp(q_values)
-  q_trans = aux_q(1,:)
-  call realise_shocks(agents, periods, aux_q, gp_q, shock_q)
 
   ! Search cost process
   gamma_values(1) = gamma_bar - epsilon_gamma
   gamma_values(2) = gamma_bar
   gamma_values(3) = gamma_bar + epsilon_gamma
   gamma_trans = 1.d0/real(gp_gamma)
-
-  ! call random_integers(agents,periods,1,3,shock_g)
-
-  ! UI process, 1: Entilted, 0: Not entailted
-  IB_trans(1,1) = 1.d0 - mu
-  IB_trans(1,0) = mu
-  IB_trans(0,1) = 0.d0
-  IB_trans(0,0) = 1.d0
-
-  ! Guess inital prices
-  KLratio = 119.60
-  call Prices(KLratio, int_rate, wage)
-
-  ! Guess average z and T
-  average_z = 2.33
-  T = 1.28
-
-  ! Generate shocks
-  call random_number(shock_lm)
-  call realise_iid(agents, periods, mu, shock_mu)
-  call random_integers(agents, periods, 1, gp_gamma, shock_g)
-end subroutine initialisation
-
-!===== REALISE SHOCKS =============================================================================
-subroutine realise_shocks(agents, periods, trans_matrix, gp_tm, shocks)
-  ! Computes the realised shock implied by trans_matrix, and returns it in shocks
-  use Utils
-  implicit none
-
-  integer, intent(in) :: agents, periods, gp_tm
-  integer :: ind_ag, ind_p, ind_sh
-  integer, dimension(agents, periods), intent(out) :: shocks
-  real(8) :: aux_sum
-  real(8), dimension(gp_tm) :: ss_dist, aux_vec
-  real(8), dimension(gp_tm,gp_tm), intent(in) :: trans_matrix
-  real(8), dimension(agents, periods) :: aux_shocks
-
-  call random_number(aux_shocks)
-
-  ! Find steady state distribution
-  ss_dist = my_ss(trans_matrix, gp_tm)
-
-  ! Simulate for all periods
-  do ind_ag = 1, agents
-  do ind_p = 1, periods
-    ! Chose auxiliary vector for first period
-    if (ind_p.eq.1) then
-      aux_vec = ss_dist
-    else
-      aux_vec = trans_matrix(shocks(ind_ag,ind_p-1),:)
-    end if
-    ! Find out shock
-    aux_sum = 0.d0
-    do ind_sh = 1, gp_tm
-      aux_sum  = aux_sum + aux_vec(ind_sh)
-      if (aux_sum.ge.aux_shocks(ind_ag,ind_p)) exit
-    end do
-    shocks(ind_ag,ind_p) = ind_sh
-  end do
-  end do
-end subroutine realise_shocks
+end subroutine iniSingles
 
 !===== REALISE SIMPLE IID SHOCKS ==================================================================
 subroutine realise_iid(agents, periods, param_value, shocks)
@@ -147,15 +121,3 @@ subroutine realise_iid(agents, periods, param_value, shocks)
   end do
   end do
 end subroutine realise_iid
-
-!===== RANDOM INTEGERS ============================================================================
-subroutine random_integers(rows, columns, lb, ub, int_matrix)
-  ! Returns a int_matrix(rows, columns) of random integer number numbers in [lb,ub]
-  integer, intent(in) :: rows, columns, lb, ub
-  integer, dimension(rows, columns), intent(out) :: int_matrix
-  real(8), dimension(rows, columns) :: aux_mat
-
-  call random_number(aux_mat)
-
-  int_matrix = lb + floor(real(ub+1-lb)*aux_mat)
-end subroutine random_integers
