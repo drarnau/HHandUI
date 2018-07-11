@@ -23,7 +23,7 @@ program calibration
   ! SOLVE THE MODEL FOR SINGLE MALES
     call cpu_time(t_start)
 
-    call Singles(1)
+    ! call Singles(1)
 
     call cpu_time(t_finish)
     print *, "Time to solve single males:"
@@ -32,10 +32,19 @@ program calibration
   ! SOLVE THE MODEL FOR SINGLE FEMALES
     call cpu_time(t_start)
 
-    call Singles(2)
+    ! call Singles(2)
 
     call cpu_time(t_finish)
     print *, "Time to solve single females:"
+    call mytime(t_finish-t_start)
+
+  ! SOLVE THE MODEL FOR MARRIED HOUSEHOLDS
+    call cpu_time(t_start)
+
+    call MarriedHH()
+
+    call cpu_time(t_finish)
+    print *, "Time to solve married households:"
     call mytime(t_finish-t_start)
 
   ! ! COMPUTE DECISION RULES

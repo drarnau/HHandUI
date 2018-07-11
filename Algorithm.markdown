@@ -32,3 +32,5 @@ There are three types of parameters (mutually exclusive categories):
 
 ## To do-list
 - [] Results printed to txt files.
+- [] Histogram assets in simulation to find appropriate bounds.
+- [] Change from Tauchen to Rouwenhorst.

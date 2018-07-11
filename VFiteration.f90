@@ -1,3 +1,4 @@
+!===== VF SINGLES =================================================================================
 subroutine VFSingles()
   use Globals
   use GlobalsSingles
@@ -41,7 +42,7 @@ subroutine VFSingles()
   ! Value function iteration
   do iter = 1, maxIter
     ! Compute expected values
-    call ExpectedValues(exp_N, exp_U, exp_W)
+    call ExpectedValuesS(exp_N, exp_U, exp_W)
 
     ! Iterate over all states TODAY
     do ind_a = 1, gp_a
@@ -105,12 +106,13 @@ subroutine VFSingles()
 
 end subroutine VFSingles
 
-!===== EXPECTED VALUES ============================================================================
-subroutine ExpectedValues(exp_N, exp_U, exp_W)
+!===== EXPECTED VALUES SINGLES ====================================================================
+subroutine ExpectedValuesS(exp_N, exp_U, exp_W)
   ! Computes auxiliary vector to store the expected value for each level of assets tomorrow
   use Globals
   use GlobalsSingles
   implicit none
+
   integer :: ind_z, ind_b, ind_ap, ind_zp, ind_gp, ind_bp
   real(8) :: prob_N, prob_U, prob_W
   real(8), dimension(gp_a,gp_z), intent(out) :: exp_N, exp_W
@@ -123,7 +125,7 @@ subroutine ExpectedValues(exp_N, exp_U, exp_W)
 
   ! Iterate over values of z TODAY
   do ind_z = 1, gp_z
-    ! Iterate over all values of assets, z, q, and gammas tomorrow
+    ! Iterate over all values of assets, z, and gammas tomorrow
     do ind_ap = 1, gp_a
     do ind_zp = 1, gp_z
     do ind_gp = 1, gp_gamma
@@ -132,11 +134,9 @@ subroutine ExpectedValues(exp_N, exp_U, exp_W)
                       (lambda_n*V_vf(ind_ap,ind_zp,ind_gp,0)) + &
                       ((1.d0-lambda_n)*J_vf(ind_ap,ind_zp,ind_gp,0)))
 
-      ! Iterate over values of match quality TODAY
       prob_W = prob_N
       exp_W(ind_ap,ind_z) = exp_W(ind_ap,ind_z) + prob_W*(&
-                        ((1.d0-sigma-lambda_e)*V_vf(ind_ap,ind_zp,ind_gp,0)) + &
-                        (lambda_e*V_vf(ind_ap,ind_zp,ind_gp,0)) + &
+                        ((1.d0-sigma)*V_vf(ind_ap,ind_zp,ind_gp,0)) + &
                         (sigma*(1.d0-lambda_u)*J_vf(ind_ap,ind_zp,ind_gp,1)) + &
                         (sigma*lambda_u*V_vf(ind_ap,ind_zp,ind_gp,1)))
 
@@ -153,7 +153,7 @@ subroutine ExpectedValues(exp_N, exp_U, exp_W)
     end do
     end do
   end do
-end subroutine ExpectedValues
+end subroutine ExpectedValuesS
 
 !===== OLF ========================================================================================
 subroutine value_N(ind_a, aux_exp, pf, vf)
@@ -265,3 +265,231 @@ CONTAINS
     valor_U = u(cons) - gamma_values(ind_g) + beta*aux_inter
   end function valor_U
 end subroutine value_U
+
+!===== VF MARRIED =================================================================================
+subroutine VFMarried()
+  use Globals
+  use GlobalsMarried
+  use Utils
+
+  implicit none
+
+  real(8), dimension(gp_a,gp_z**2) :: new_NN_vf, new_NN_pf, new_WW_vf, new_WW_pf, new_WN_vf, &
+                                      new_WN_pf, new_NW_vf, new_NW_pf, &
+                                      exp_WW, exp_WN, exp_NN, exp_NW
+  real(8), dimension(gp_a,gp_z**2,0:1) :: exp_WU, exp_UW, exp_NU, exp_UN
+  real(8), dimension(gp_a,gp_z**2,0:1,0:1) :: exp_UU
+  real(8), dimension(gp_a,gp_z**2,gp_gamma,0:1) :: new_WU_vf, new_WU_pf, new_UW_vf, new_UW_pf, &
+                                                      new_NU_vf, new_NU_pf, new_UN_vf, new_UN_pf
+  real(8), dimension(gp_a,gp_z**2,gp_gamma,gp_gamma,0:1,0:1) :: new_UU_vf, new_UU_pf
+
+  ! Guess a value for global value functions
+  call random_number(WW_vf)
+  call random_number(WU_vf)
+  call random_number(WN_vf)
+  call random_number(UW_vf)
+  call random_number(UU_vf)
+  call random_number(UN_vf)
+  call random_number(NW_vf)
+  call random_number(NU_vf)
+  call random_number(NN_vf)
+  call ValueFunctions(WW_vf,WU_vf,WN_vf,UW_vf,UU_vf,UN_vf,NW_vf,NU_vf,NN_vf,JJ_vf,VJ_vf,JV_vf,VV_vf)
+
+  ! Initialise new value functions
+  new_WW_vf = 0.d0
+  new_WU_vf = 0.d0
+  new_WN_vf = 0.d0
+  new_UW_vf = 0.d0
+  new_UU_vf = 0.d0
+  new_UN_vf = 0.d0
+  new_NW_vf = 0.d0
+  new_NU_vf = 0.d0
+  new_NN_vf = 0.d0
+
+  ! Initialise global policy functions
+  WW_pf = 0.d0
+  WU_pf = 0.d0
+  WN_pf = 0.d0
+  UW_pf = 0.d0
+  UU_pf = 0.d0
+  UN_pf = 0.d0
+  NW_pf = 0.d0
+  NU_pf = 0.d0
+  NN_pf = 0.d0
+
+  ! Initialise new policy functions
+  new_WW_pf = 1.d0
+  new_WU_pf = 1.d0
+  new_WN_pf = 1.d0
+  new_UW_pf = 1.d0
+  new_UU_pf = 1.d0
+  new_UN_pf = 1.d0
+  new_NW_pf = 1.d0
+  new_NU_pf = 1.d0
+  new_NN_pf = 1.d0
+
+  ! Compute expected values
+  call ExpectedValuesM(exp_WW,exp_WU,exp_WN,exp_UW,exp_UU,exp_UN,exp_NW,exp_NU,exp_NN)
+
+
+
+end subroutine VFMarried
+
+!===== EXPECTED VALUES MARRIED ====================================================================
+subroutine ExpectedValuesM(exp_WW,exp_WU,exp_WN,exp_UW,exp_UU,exp_UN,exp_NW,exp_NU,exp_NN)
+  use Globals
+  use GlobalsMarried
+  implicit none
+
+  integer :: ind_z, ind_b_f, ind_ap, ind_zp, ind_gp_m, ind_gp_f, ind_b, ind_bp, ind_bp_f
+  real(8) :: prob_WW, prob_WU, prob_WN, prob_UW, prob_UU, prob_UN, prob_NW, prob_NU, prob_NN
+  real(8), dimension(gp_a,gp_z**2), intent(out) :: exp_WW, exp_WN, exp_NN, exp_NW
+  real(8), dimension(gp_a,gp_z**2,0:1), intent(out) :: exp_WU, exp_UW, exp_NU, exp_UN
+  real(8), dimension(gp_a,gp_z**2,0:1,0:1), intent(out) :: exp_UU
+
+  ! Initialise arrays to 0
+  exp_WW = 0.d0
+  exp_WU = 0.d0
+  exp_WN = 0.d0
+  exp_UW = 0.d0
+  exp_UU = 0.d0
+  exp_UN = 0.d0
+  exp_NW = 0.d0
+  exp_NU = 0.d0
+  exp_NN = 0.d0
+
+  ! Iterate over values of z TODAY
+  do ind_z = 1, gp_z**2
+    ! Iterate over values of assets, z, and gammas TOMORROW
+    do ind_ap = 1, gp_a
+    do ind_zp = 1, gp_z**2
+    do ind_gp_m = 1, gp_gamma
+    do ind_gp_f = 1, gp_gamma
+      prob_NN = z_trans(ind_z,ind_zp)*gamma_trans(male,ind_gp_m)*gamma_trans(female,ind_gp_f)
+      exp_NN(ind_ap,ind_z) = exp_NN(ind_ap,ind_z) + prob_NN*( &
+        (lambda_n(male)*lambda_n(female)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
+        (lambda_n(male)*(1.d0-lambda_n(female))*VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
+        ((1.d0-lambda_n(male))*lambda_n(female)*JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
+        ((1.d0-lambda_n(male))*(1.d0-lambda_n(female))*JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0)))
+
+      prob_WN = prob_NN
+      exp_WN(ind_ap,ind_z) = exp_WN(ind_ap,ind_z) + prob_WN*( &
+        ((1.d0-sigma(male))*lambda_n(female)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
+        ((1.d0-sigma(male))*(1.d0-lambda_n(female))*VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
+        (sigma(male)*lambda_u(male)*lambda_n(female)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,0))+&
+        (sigma(male)*lambda_u(male)*(1.d0-lambda_n(female))*&
+                                                    VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,0))+&
+        (sigma(male)*(1.d0-lambda_u(male))*lambda_n(female)*&
+                                                    JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,0))+&
+        (sigma(male)*(1.d0-lambda_u(male))*(1.d0-lambda_n(female))*&
+                                                    JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,0)))
+
+      prob_NW = prob_WN
+      exp_NW(ind_ap,ind_z) = exp_NW(ind_ap,ind_z) + prob_NW*( &
+        ((1.d0-sigma(female))*lambda_n(male)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
+        ((1.d0-sigma(female))*(1.d0-lambda_n(male))*VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
+        (sigma(female)*lambda_u(female)*lambda_n(male)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1))+&
+        (sigma(female)*lambda_u(female)*(1.d0-lambda_n(male))*&
+                                                    VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1))+&
+        (sigma(female)*(1.d0-lambda_u(female))*lambda_n(male)*&
+                                                    JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1))+&
+        (sigma(female)*(1.d0-lambda_u(female))*(1.d0-lambda_n(male))*&
+                                                    JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1)))
+
+      prob_WW = prob_NW
+      exp_WW(ind_ap,ind_z) = exp_WW(ind_ap,ind_z) + prob_WW*( &
+        ((1.d0-sigma(male))*(1.d0-sigma(female))*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
+        ((1.d0-sigma(male))*sigma(female)*lambda_u(female)*&
+                                                    VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1))+&
+        ((1.d0-sigma(male))*sigma(female)*(1.d0-lambda_u(female))*&
+                                                    VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1))+&
+        (sigma(male)*lambda_u(male)*(1.d0-sigma(female))*&
+                                                    VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,0))+&
+        (sigma(male)*lambda_u(male)*sigma(female)*lambda_u(female)*&
+                                                    VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,1))+&
+        (sigma(male)*lambda_u(male)*sigma(female)*(1.d0-lambda_u(female))*&
+                                                    VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,1))+&
+        (sigma(male)*(1.d0-lambda_u(male))*(1.d0-sigma(female))*&
+                                                    JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,0))+&
+        (sigma(male)*(1.d0-lambda_u(male))*sigma(female)*lambda_u(female)*&
+                                                    JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,1))+&
+        (sigma(male)*(1.d0-lambda_u(male))*sigma(female)*(1.d0-sigma(female))*&
+                                                    JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,1)))
+
+      ! Iterate over values of UI TODAY and TOMORROW
+      do ind_b = 0, 1
+      do ind_bp = 0, 1
+        prob_NU = prob_WW*IB_trans(ind_b,ind_bp)
+        exp_NU(ind_ap,ind_z,ind_b) = exp_NU(ind_ap,ind_z,ind_b) + prob_NU*( &
+          (lambda_n(male)*lambda_u(female)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,ind_bp))+&
+          (lambda_n(male)*(1.d0-lambda_u(female))*&
+                                          VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,ind_bp))+&
+          ((1.d0-lambda_n(male))*lambda_u(female)*&
+                                          JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,ind_bp))+&
+          ((1.d0-lambda_n(male))*(1.d0-lambda_u(female))*&
+                                          JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,ind_bp)))
+
+        prob_UN = prob_NU
+        exp_UN(ind_ap,ind_z,ind_b) = exp_UN(ind_ap,ind_z,ind_b) + prob_UN*( &
+          (lambda_n(female)*lambda_u(male)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,0))+&
+          (lambda_n(female)*(1.d0-lambda_u(male))*&
+                                          VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,0))+&
+          ((1.d0-lambda_n(female))*lambda_u(male)*&
+                                          JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,0))+&
+          ((1.d0-lambda_n(female))*(1.d0-lambda_u(male))*&
+                                          JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,0)))
+
+        prob_WU = prob_NU
+        exp_WU(ind_ap,ind_z,ind_b) = exp_WU(ind_ap,ind_z,ind_b) + prob_WU*( &
+          ((1.d0-sigma(male))*lambda_u(female)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,ind_bp))+&
+          ((1.d0-sigma(male))*(1.d0-lambda_u(female))*&
+                                            VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,ind_bp))+&
+          (sigma(male)*lambda_u(male)*lambda_u(female)*&
+                                            VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,ind_bp))+&
+          (sigma(male)*lambda_u(male)*(1.d0-lambda_u(female))*&
+                                            VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,ind_bp))+&
+          (sigma(male)*(1.d0-lambda_u(male))*lambda_u(female)*&
+                                            JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,ind_bp))+&
+          (sigma(male)*(1.d0-lambda_u(male))*(1.d0-lambda_u(female))*&
+                                            JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,ind_bp)))
+
+        prob_UW = prob_UN
+        exp_UW(ind_ap,ind_z,ind_b) = exp_UW(ind_ap,ind_z,ind_b) + prob_UW*( &
+          ((1.d0-sigma(female))*lambda_u(male)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,0))+&
+          ((1.d0-sigma(female))*(1.d0-lambda_u(male))*&
+                                            VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,0))+&
+          (sigma(female)*lambda_u(female)*lambda_u(male)*&
+                                            VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,1))+&
+          (sigma(female)*lambda_u(female)*(1.d0-lambda_u(male))*&
+                                            VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,1))+&
+          (sigma(female)*(1.d0-lambda_u(female))*lambda_u(male)*&
+                                            JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,1))+&
+          (sigma(female)*(1.d0-lambda_u(female))*(1.d0-lambda_u(male))*&
+                                            JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,1)))
+
+        ! Iterate over value of UI TODAY and TOMORROW for both
+        do ind_b_f = 0, 1
+        do ind_bp_f = 0, 1
+          prob_UU = prob_NU*IB_trans(ind_b_f,ind_bp_f)
+          exp_UU(ind_ap,ind_z,ind_b,ind_b_f) = exp_UU(ind_ap,ind_z,ind_b,ind_b_f) + prob_UU*( &
+            (lambda_u(male)*lambda_u(female)*&
+                                          VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,ind_bp_f))+&
+            (lambda_u(male)*(1.d0-lambda_u(female))*&
+                                          VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,ind_bp_f))+&
+            ((1.d0-lambda_u(male))*lambda_u(female)*&
+                                          JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,ind_bp_f))+&
+            ((1.d0-lambda_u(male))*(1.d0-lambda_u(female))*&
+                                          JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,ind_bp_f)))
+        end do
+        end do
+      end do
+      end do
+    end do
+    end do
+    end do
+    end do
+  end do
+
+
+
+end subroutine ExpectedValuesM

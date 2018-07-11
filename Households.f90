@@ -1,6 +1,6 @@
+!===== SINGLES ====================================================================================
 subroutine Singles(mysex)
-  use Globals
-  use GlobalsSingles
+  use Globals ! TO BE DELATED WHEN RESULTS NOT PRINTED
   implicit none
 
   integer, intent(in) :: mysex
@@ -29,3 +29,13 @@ subroutine Singles(mysex)
   print *, "====================================="
   print *, ""
 end subroutine Singles
+
+!===== MARRIED ====================================================================================
+subroutine MarriedHH()
+  implicit none
+
+  call iniMarried()
+  call VFMarried()
+  ! call SimMarried()
+
+end subroutine MarriedHH

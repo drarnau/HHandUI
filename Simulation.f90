@@ -101,13 +101,7 @@ subroutine SimSingles(mysex)
       income = a_income + (1.d0-tau)*wage*z - ap
 
       ! LM status next period
-      if (shock_lm(ind_ag,ind_p).le.lambda_e) then ! New offer
-        ! Update entitlement next period
-        new_entitled(ind_ag) = 0
-        new_LMstatus(ind_ag) = choice_V(ap,myshock_z(ind_ag,ind_p+1),&
-                                        myshock_g(ind_ag,ind_p+1),new_entitled(ind_ag))
-      elseif ((shock_lm(ind_ag,ind_p).gt.lambda_e).and.&
-              (shock_lm(ind_ag,ind_p).le.(1.d0-sigma))) then ! No fired, no new offer
+      if ((shock_lm(ind_ag,ind_p).le.(1.d0-sigma))) then ! No fired
         ! Update entitlement next period
         new_entitled(ind_ag) = 0
         new_LMstatus(ind_ag) = choice_V(ap,myshock_z(ind_ag,ind_p+1),&

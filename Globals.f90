@@ -8,8 +8,7 @@ module Globals
   integer, dimension(:,:), allocatable :: shock_mu
 
   ! Real parameters
-  real(8), parameter :: cover_z = 2.d0 , cover_q = 2.d0, min_a = 0, max_a = 1440.0, &
-                        tiny = 1.0d-10
+  real(8), parameter :: cover_z = 2.d0 , cover_q = 2.d0, tiny = 1.0d-10
 
   ! Real variables
   real(8) :: mu, b_0, b_bar, theta, delta, tau, int_rate, wage, KLratio, average_z, T, &
@@ -80,9 +79,11 @@ module GlobalsSingles
   ! Integer parameters
   integer, parameter :: gp_a = 48, gp_z = 20, gp_gamma = 3
 
+  ! Real parameters
+  real(8), parameter :: min_a = 0, max_a = 1440.0
+
   ! Real variables
-  real(8) :: alpha, beta, gamma_bar, epsilon_gamma, rho_z, sigma_epsilon, sigma_q, lambda_e, &
-  lambda_u, lambda_n, sigma
+  real(8) :: alpha, beta, gamma_bar, epsilon_gamma, rho_z, sigma_epsilon, lambda_u, lambda_n, sigma
 
   ! Real vectors
   real(8), dimension(gp_a) :: a_values
@@ -116,3 +117,81 @@ CONTAINS
     end do
   end subroutine ValueFunctions
 end module GlobalsSingles
+
+!===== MARRIED GLOBALS ============================================================================
+module GlobalsMarried
+  implicit none
+
+  ! Integer parameters
+  integer, parameter :: gp_a = 48, gp_z = 20, gp_gamma = 3
+
+  ! Real parameters
+  real(8), parameter :: min_a = 0, max_a = 2880.0
+
+  ! Real variables
+  real(8) :: beta
+
+  ! Real vectors
+  real(8), dimension(1:3) :: alpha
+  real(8), dimension(1:2) :: gamma_bar, epsilon_gamma, rho_z, sigma_epsilon, lambda_u, lambda_n, &
+  sigma
+
+  ! Real vectors
+  real(8), dimension(gp_a) :: a_values
+
+  ! Real matrices
+  real(8), dimension(gp_z**2) :: z_ssdist
+  real(8), dimension(1:2,gp_z**2) :: z_values
+  real(8), dimension(1:2,gp_gamma) :: gamma_values, gamma_trans
+  real(8), dimension(gp_z**2,gp_z**2) :: z_trans
+  real(8), dimension(gp_a,gp_z**2) :: NN_vf, NN_pf, WW_vf, WW_pf, WN_vf, WN_pf, NW_vf, NW_pf
+  real(8), dimension(gp_a,gp_z**2,gp_gamma,0:1) :: WU_vf, WU_pf, UW_vf, UW_pf, NU_vf, NU_pf, &
+                                                      UN_vf, UN_pf
+  real(8), dimension(gp_a,gp_z**2,gp_gamma,gp_gamma,0:1,0:1) :: UU_vf, UU_pf, JJ_vf, VJ_vf, &
+                                                                    JV_vf, VV_vf
+
+CONTAINS
+
+  ! Create value functions JJ, VJ, JV, and VV, given NN, NU, NW, UN, UU, UW, WW, WU, WN
+  subroutine ValueFunctions(WW, WU, WN, UW, UU, UN, NW, NU, NN, JJ, VJ, JV, VV)
+    implicit none
+    integer :: ind_a, ind_z, ind_g_m, ind_g_f, ind_b_m, ind_b_f
+    real(8), dimension(gp_a,gp_z**2), intent(in) :: NN, WW, WN, NW
+    real(8), dimension(gp_a,gp_z**2,gp_gamma,0:1), intent(in) :: WU, UW, NU, UN
+    real(8), dimension(gp_a,gp_z**2,gp_gamma,gp_gamma,0:1,0:1), intent(in) :: UU
+    real(8), dimension(gp_a,gp_z**2,gp_gamma,gp_gamma,0:1,0:1), intent(out) :: JJ, VJ, JV, VV
+
+    do ind_a = 1, gp_a
+    do ind_z = 1, gp_z**2
+    do ind_g_m = 1, gp_gamma
+    do ind_g_f = 1, gp_gamma
+    do ind_b_m = 0, 1
+    do ind_b_f = 0, 1
+      ! None has a job offer
+      JJ(ind_a,ind_z,ind_g_m,ind_g_f,ind_b_m,ind_b_f) = &
+        max(NN(ind_a,ind_z), NU(ind_a,ind_z,ind_g_f,ind_b_f), UN(ind_a,ind_z,ind_g_m,ind_b_m), &
+            UU(ind_a,ind_z,ind_g_m,ind_g_f,ind_b_m,ind_b_f))
+
+      ! Male has a job offer
+      VJ(ind_a,ind_z,ind_g_m,ind_g_f,ind_b_m,ind_b_f) = &
+        max(WU(ind_a,ind_z,ind_g_f,ind_b_f), WN(ind_a,ind_z), &
+            JJ(ind_a,ind_z,ind_g_m,ind_g_f,ind_b_m,ind_b_f))
+
+      ! Female has a job offer
+      JV(ind_a,ind_z,ind_g_m,ind_g_f,ind_b_m,ind_b_f) = &
+        max(UW(ind_a,ind_z,ind_g_m,ind_b_m), NW(ind_a,ind_z), &
+            JJ(ind_a,ind_z,ind_g_m,ind_g_f,ind_b_m,ind_b_f))
+
+      ! Both have a job offer
+      VV(ind_a,ind_z,ind_g_m,ind_g_f,ind_b_m,ind_b_f) = max(WW(ind_a,ind_z), &
+            WU(ind_a,ind_z,ind_g_f,ind_b_f), WN(ind_a,ind_z), &
+            UW(ind_a,ind_z,ind_g_m,ind_b_m), NW(ind_a,ind_z), &
+            JJ(ind_a,ind_z,ind_g_m,ind_g_f,ind_b_m,ind_b_f))
+    end do
+    end do
+    end do
+    end do
+    end do
+    end do
+  end subroutine ValueFunctions
+end module GlobalsMarried
