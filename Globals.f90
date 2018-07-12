@@ -25,14 +25,6 @@ module Globals
 
 CONTAINS
 
-  ! Computes log utility
-  real(8) function u(consumption)
-    implicit none
-    real(8), intent(in) :: consumption
-
-    u = log(max(1.0d-320,consumption))
-  end function u
-
   ! Computes equilibrium prices
   subroutine Prices(my_KL,my_r,my_w)
     implicit none
@@ -83,7 +75,8 @@ module GlobalsSingles
   real(8), parameter :: min_a = 0, max_a = 1440.0
 
   ! Real variables
-  real(8) :: alpha, beta, gamma_bar, epsilon_gamma, rho_z, sigma_epsilon, lambda_u, lambda_n, sigma
+  real(8) :: alpha, beta, c_min, gamma_bar, epsilon_gamma, rho_z, sigma_epsilon, lambda_u, &
+              lambda_n, sigma
 
   ! Real vectors
   real(8), dimension(gp_a) :: a_values
@@ -96,6 +89,13 @@ module GlobalsSingles
   real(8), dimension(gp_a,gp_z,gp_gamma,0:1) :: U_vf, J_vf, U_pf, V_vf
 
 CONTAINS
+  ! Computes singles utility
+  real(8) function u(consumption)
+    implicit none
+    real(8), intent(in) :: consumption
+
+    u = log(max(1.0d-320,consumption-c_min))
+  end function u
 
   ! Creates the value functions J and V given N, U, and W
   subroutine ValueFunctions(N,U,W,J,V)
@@ -123,13 +123,13 @@ module GlobalsMarried
   implicit none
 
   ! Integer parameters
-  integer, parameter :: gp_a = 48, gp_z = 20, gp_gamma = 3
+  integer, parameter :: gp_a = 48, gp_z = 9, gp_gamma = 3, gp_z2 = gp_z**2
 
   ! Real parameters
   real(8), parameter :: min_a = 0, max_a = 2880.0
 
   ! Real variables
-  real(8) :: beta
+  real(8) :: beta, c_min, chi
 
   ! Real vectors
   real(8), dimension(1:3) :: alpha
@@ -140,29 +140,37 @@ module GlobalsMarried
   real(8), dimension(gp_a) :: a_values
 
   ! Real matrices
-  real(8), dimension(gp_z**2) :: z_ssdist
-  real(8), dimension(1:2,gp_z**2) :: z_values
+  real(8), dimension(gp_z2) :: z_ssdist
+  real(8), dimension(1:2,gp_z2) :: z_values
   real(8), dimension(1:2,gp_gamma) :: gamma_values, gamma_trans
-  real(8), dimension(gp_z**2,gp_z**2) :: z_trans
-  real(8), dimension(gp_a,gp_z**2) :: NN_vf, NN_pf, WW_vf, WW_pf, WN_vf, WN_pf, NW_vf, NW_pf
-  real(8), dimension(gp_a,gp_z**2,gp_gamma,0:1) :: WU_vf, WU_pf, UW_vf, UW_pf, NU_vf, NU_pf, &
+  real(8), dimension(gp_z2,gp_z2) :: z_trans
+  real(8), dimension(gp_a,gp_z2) :: NN_vf, NN_pf, WW_vf, WW_pf, WN_vf, WN_pf, NW_vf, NW_pf
+  real(8), dimension(gp_a,gp_z2,gp_gamma,0:1) :: WU_vf, WU_pf, UW_vf, UW_pf, NU_vf, NU_pf, &
                                                       UN_vf, UN_pf
-  real(8), dimension(gp_a,gp_z**2,gp_gamma,gp_gamma,0:1,0:1) :: UU_vf, UU_pf, JJ_vf, VJ_vf, &
+  real(8), dimension(gp_a,gp_z2,gp_gamma,gp_gamma,0:1,0:1) :: UU_vf, UU_pf, JJ_vf, VJ_vf, &
                                                                     JV_vf, VV_vf
 
 CONTAINS
+
+  ! Computes married utility
+  real(8) function u(consumption)
+    implicit none
+    real(8), intent(in) :: consumption
+
+    u = log(max(1.0d-320,((consumption-c_min)/chi)))
+  end function u
 
   ! Create value functions JJ, VJ, JV, and VV, given NN, NU, NW, UN, UU, UW, WW, WU, WN
   subroutine ValueFunctions(WW, WU, WN, UW, UU, UN, NW, NU, NN, JJ, VJ, JV, VV)
     implicit none
     integer :: ind_a, ind_z, ind_g_m, ind_g_f, ind_b_m, ind_b_f
-    real(8), dimension(gp_a,gp_z**2), intent(in) :: NN, WW, WN, NW
-    real(8), dimension(gp_a,gp_z**2,gp_gamma,0:1), intent(in) :: WU, UW, NU, UN
-    real(8), dimension(gp_a,gp_z**2,gp_gamma,gp_gamma,0:1,0:1), intent(in) :: UU
-    real(8), dimension(gp_a,gp_z**2,gp_gamma,gp_gamma,0:1,0:1), intent(out) :: JJ, VJ, JV, VV
+    real(8), dimension(gp_a,gp_z2), intent(in) :: NN, WW, WN, NW
+    real(8), dimension(gp_a,gp_z2,gp_gamma,0:1), intent(in) :: WU, UW, NU, UN
+    real(8), dimension(gp_a,gp_z2,gp_gamma,gp_gamma,0:1,0:1), intent(in) :: UU
+    real(8), dimension(gp_a,gp_z2,gp_gamma,gp_gamma,0:1,0:1), intent(out) :: JJ, VJ, JV, VV
 
     do ind_a = 1, gp_a
-    do ind_z = 1, gp_z**2
+    do ind_z = 1, gp_z2
     do ind_g_m = 1, gp_gamma
     do ind_g_f = 1, gp_gamma
     do ind_b_m = 0, 1

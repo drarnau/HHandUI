@@ -70,6 +70,7 @@ subroutine iniSingles(myidentity)
   open(unit=2, file = aux_name)
   read(2,*) alpha           ! Utility cost of working
   read(2,*) beta            ! Discount factor
+  read(2,*) c_min           ! Consumption floor
   read(2,*) gamma_bar       ! Average search cost
   read(2,*) epsilon_gamma   ! Standard deviation search cost
   read(2,*) rho_z           ! Persistence productivity process
@@ -112,6 +113,8 @@ subroutine iniMarried()
   read(3,*) alpha(female)           ! Utility cost of working female
   read(3,*) alpha(3)                ! Utility cost of joint work
   read(3,*) beta                    ! Discount factor
+  read(3,*) c_min                   ! Consumption floor
+  read(3,*) chi                     ! Adult-equivalent scale
   read(3,*) gamma_bar(male)         ! Average search cost male
   read(3,*) gamma_bar(female)       ! Average search cost female
   read(3,*) epsilon_gamma(male)     ! Standard deviation search cost male
@@ -152,7 +155,7 @@ subroutine iniMarried()
   end do
   end do
 
-  z_ssdist = my_ss(z_trans,gp_z**2)
+  z_ssdist = my_ss(z_trans,gp_z2)
 
   ! Search cost process
   do sex = 1, 2

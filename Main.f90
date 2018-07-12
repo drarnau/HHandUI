@@ -23,7 +23,7 @@ program calibration
   ! SOLVE THE MODEL FOR SINGLE MALES
     call cpu_time(t_start)
 
-    ! call Singles(1)
+    call Singles(1)
 
     call cpu_time(t_finish)
     print *, "Time to solve single males:"

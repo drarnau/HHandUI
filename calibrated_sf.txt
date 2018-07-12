@@ -1,5 +1,6 @@
 0.585     ! Utility cost of working 0.485
 0.99465   ! Discount factor
+0.0       ! Consumption floor
 0.042     ! Average search cost
 0.03      ! Standard deviation search cost
 0.996     ! Persistence productivity process

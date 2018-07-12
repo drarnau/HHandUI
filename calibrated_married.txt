@@ -1,7 +1,9 @@
 0.485     ! Utility cost of working male
-0.485     ! Utility cost of working female
+0.385     ! Utility cost of working female
 0.00      ! Utility cost of joint work
 0.99465   ! Discount factor
+0.0       ! Consumption floor
+1.7       ! Adult-equivalent scale
 0.0424375 ! Average search cost male
 0.0424375 ! Average search cost female
 0.030555  ! Standard deviation search cost male
