@@ -48,7 +48,7 @@ subroutine initialisation()
   ! Generate shocks
   call random_number(shock_z)
   call random_number(shock_g)
-  call realise_iid(agents, periods, mu, shock_mu)
+  call random_number(shock_mu)
   call random_number(shock_lm)
 end subroutine initialisation
 
@@ -165,28 +165,3 @@ subroutine iniMarried()
     gamma_trans(sex,:) = 1.d0/real(gp_gamma)
   end do
 end subroutine iniMarried
-
-!===== REALISE SIMPLE IID SHOCKS ==================================================================
-subroutine realise_iid(agents, periods, param_value, shocks)
-  ! Computes the realised shock of an iid process
-
-  implicit none
-
-  integer, intent(in) :: agents, periods
-  integer :: ind_ag, ind_p
-  integer, dimension(agents, periods), intent(out) :: shocks
-  real(8), intent(in) :: param_value
-  real(8), dimension(agents, periods) :: aux_shocks
-
-  shocks = 0
-
-  call random_number(aux_shocks)
-
-  do ind_ag = 1, agents
-  do ind_p = 1, periods
-    if (aux_shocks(ind_ag,ind_p).le.param_value) then
-      shocks(ind_ag,ind_p) = 1
-    end if
-  end do
-  end do
-end subroutine realise_iid

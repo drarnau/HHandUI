@@ -41,7 +41,7 @@ program calibration
   ! SOLVE THE MODEL FOR MARRIED HOUSEHOLDS
     call cpu_time(t_start)
 
-    call MarriedHH()
+    ! call MarriedHH()
 
     call cpu_time(t_finish)
     print *, "Time to solve married households:"

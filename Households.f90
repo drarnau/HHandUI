@@ -36,6 +36,6 @@ subroutine MarriedHH()
 
   call iniMarried()
   call VFMarried()
-  call SimMarried()
+  ! call SimMarried()
 
 end subroutine MarriedHH

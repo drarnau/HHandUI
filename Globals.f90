@@ -4,9 +4,6 @@ module Globals
   integer, parameter :: single = 0, married = 1, male = 1, female = 2
   integer, parameter :: agents = 10000, periods = 20001
 
-  ! Integer matrices
-  integer, dimension(:,:), allocatable :: shock_mu
-
   ! Real parameters
   real(8), parameter :: cover_z = 2.d0 , cover_q = 2.d0, tiny = 1.0d-10
 
@@ -17,7 +14,7 @@ module Globals
   ! Real vectors
 
   ! Real matrices
-  real(8), dimension(:,:), allocatable :: shock_lm, shock_z, shock_g
+  real(8), dimension(:,:), allocatable :: shock_lm, shock_z, shock_g, shock_mu
   real(8), dimension(0:1, 0:1) :: IB_trans
   real(8), dimension(0:1,1:2) :: Erate, Urate, Nrate, weights, aux_KLratio, &
   aux_average_z, aux_T

@@ -31,6 +31,7 @@ There are three types of parameters (mutually exclusive categories):
 - `beta` is β: Discount factor of households.
 
 ## To do-list
+- [] Collapse Married shocks into 1 dimension.
 - [] Results printed to txt files.
 - [] Histogram assets in simulation to find appropriate bounds.
 - [] Change from Tauchen to Rouwenhorst.

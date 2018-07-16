@@ -1,3 +1,4 @@
+!===== SIMULATION SINGLES =========================================================================
 subroutine SimSingles(mysex)
   use Globals
   use GlobalsSingles
@@ -18,7 +19,7 @@ subroutine SimSingles(mysex)
   real(8), dimension(gp_z) :: aux_vec
   real(8), dimension(3,3) :: trans
 
-  ! Create grid of assets for the simulation (easier to determine if distribution is statinary)
+  ! Create grid of assets for the simulation (easier to determine if distribution is stationary)
   sim_a_values = loggrid(min_a, max_a, sim_gp_a)
 
   ! Reshape decision rules with new grid
@@ -78,8 +79,6 @@ subroutine SimSingles(mysex)
     myshock_z(ind_ag,ind_p+1) = realise(shock_z(ind_ag,ind_p),aux_vec,gp_z)
     myshock_g(ind_ag,ind_p+1) = realise(shock_g(ind_ag,ind_p),gamma_trans, gp_gamma)
 
-
-
     ! Quantify shocks
     a = sim_a_values(assets(ind_ag))
     a_income = (1.d0+int_rate)*a + T ! CAREFUL: Lump-sum transfer already added here
@@ -124,7 +123,7 @@ subroutine SimSingles(mysex)
       ! Benefits
       bpaid = real(entitled(ind_ag))*(benefits(z))
       ! Next period benefits
-      if ((entitled(ind_ag).eq.1).and.(shock_mu(ind_ag,ind_p).ne.1)) then
+      if ((entitled(ind_ag).eq.1).and.(shock_mu(ind_ag,ind_p).gt.mu)) then
         ! Agent is entitled and does NOT get hit by a mu shock
         new_entitled(ind_ag) = 1
       else
