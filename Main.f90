@@ -3,7 +3,7 @@ program calibration
   use Utils
   implicit none
 
-  integer, parameter :: maxIter = 1
+  integer, parameter :: maxIter = 100
   integer :: iter, myms, mysex
   real(8), parameter :: adj_KL = 0.25d0, adj_T = 0.5d0, adj_avgz = 0.5d0, &
                         tol_KL = 0.1 , tol_T = 0.1, tol_avgz = 0.1
@@ -83,7 +83,9 @@ program calibration
   do myms = 0, 1
   do mysex = 1, 2
     print *, "====================================="
-    print *, "Sex", mysex, "Transitions:"
+    print *, "Marital Status:", myms
+    print *, "Sex", mysex
+    print *, "Transitions:"
     print '(3f7.4)', transitions(myms,mysex,1,:)
     print '(3f7.4)', transitions(myms,mysex,2,:)
     print '(3f7.4)', transitions(myms,mysex,3,:)

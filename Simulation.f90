@@ -1206,8 +1206,8 @@ subroutine SimMarried()
     Urate(married,mysex) = unemployed(mysex)/(employed(mysex)+unemployed(mysex))
     Nrate(married,mysex) = OLF(mysex)/real(agents)
     transitions(married,mysex,1, :) = itrans(mysex,1,:)/sum(itrans(mysex,1,:))
-    transitions(married,mysex,1, :) = itrans(mysex,2,:)/sum(itrans(mysex,2,:))
-    transitions(married,mysex,1, :) = itrans(mysex,3,:)/sum(itrans(mysex,3,:))
+    transitions(married,mysex,2, :) = itrans(mysex,2,:)/sum(itrans(mysex,2,:))
+    transitions(married,mysex,3, :) = itrans(mysex,3,:)/sum(itrans(mysex,3,:))
   end do
 
 CONTAINS

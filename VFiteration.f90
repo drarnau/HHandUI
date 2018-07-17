@@ -7,7 +7,7 @@ subroutine VFSingles()
   implicit none
 
   integer, parameter :: maxIter = 20000, showError = 500
-  real(8), parameter :: tolerance = 1.0d-2 !1.0d-4
+  real(8), parameter :: tolerance = 1.0d-4
 
   integer :: iter, ind_a, ind_z, ind_g, ind_b
 
@@ -276,8 +276,8 @@ subroutine VFMarried()
 
   implicit none
 
-  integer, parameter :: maxIter = 20000, showError = 500 !500
-  real(8), parameter :: tolerance = 1.0d-1 ! 1.0d-04
+  integer, parameter :: maxIter = 20000, showError = 500
+  real(8), parameter :: tolerance = 1.0d-04
 
   integer :: iter, ind_a, ind_z, ind_b, ind_g, ind_b_f, ind_g_f
 
@@ -530,12 +530,12 @@ subroutine ExpectedValuesM(exp_WW,exp_WU,exp_WN,exp_UW,exp_UU,exp_UN,exp_NW,exp_
       prob_NW = prob_WN
       exp_NW(ind_ap,ind_z) = exp_NW(ind_ap,ind_z) + prob_NW*( &
         ((1.d0-sigma(female))*lambda_n(male)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
-        ((1.d0-sigma(female))*(1.d0-lambda_n(male))*VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
+        ((1.d0-sigma(female))*(1.d0-lambda_n(male))*JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,0))+&
         (sigma(female)*lambda_u(female)*lambda_n(male)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1))+&
         (sigma(female)*lambda_u(female)*(1.d0-lambda_n(male))*&
-                                                    VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1))+&
-        (sigma(female)*(1.d0-lambda_u(female))*lambda_n(male)*&
                                                     JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1))+&
+        (sigma(female)*(1.d0-lambda_u(female))*lambda_n(male)*&
+                                                    VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1))+&
         (sigma(female)*(1.d0-lambda_u(female))*(1.d0-lambda_n(male))*&
                                                     JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,0,1)))
 
@@ -556,7 +556,7 @@ subroutine ExpectedValuesM(exp_WW,exp_WU,exp_WN,exp_UW,exp_UU,exp_UN,exp_NW,exp_
                                                     JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,0))+&
         (sigma(male)*(1.d0-lambda_u(male))*sigma(female)*lambda_u(female)*&
                                                     JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,1))+&
-        (sigma(male)*(1.d0-lambda_u(male))*sigma(female)*(1.d0-sigma(female))*&
+        (sigma(male)*(1.d0-lambda_u(male))*sigma(female)*(1.d0-lambda_u(female))*&
                                                     JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,1,1)))
 
       ! Iterate over values of UI TODAY and TOMORROW
@@ -600,13 +600,13 @@ subroutine ExpectedValuesM(exp_WW,exp_WU,exp_WN,exp_UW,exp_UU,exp_UN,exp_NW,exp_
         exp_UW(ind_ap,ind_z,ind_b) = exp_UW(ind_ap,ind_z,ind_b) + prob_UW*( &
           ((1.d0-sigma(female))*lambda_u(male)*VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,0))+&
           ((1.d0-sigma(female))*(1.d0-lambda_u(male))*&
-                                            VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,0))+&
+                                            JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,0))+&
           (sigma(female)*lambda_u(female)*lambda_u(male)*&
                                             VV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,1))+&
           (sigma(female)*lambda_u(female)*(1.d0-lambda_u(male))*&
-                                            VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,1))+&
-          (sigma(female)*(1.d0-lambda_u(female))*lambda_u(male)*&
                                             JV_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,1))+&
+          (sigma(female)*(1.d0-lambda_u(female))*lambda_u(male)*&
+                                            VJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,1))+&
           (sigma(female)*(1.d0-lambda_u(female))*(1.d0-lambda_u(male))*&
                                             JJ_vf(ind_ap,ind_zp,ind_gp_m,ind_gp_f,ind_bp,1)))
 
