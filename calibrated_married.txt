@@ -1,5 +1,5 @@
 0.485     ! Utility cost of working male
-0.385     ! Utility cost of working female
+0.485     ! Utility cost of working female
 0.00      ! Utility cost of joint work
 0.99465   ! Discount factor
 0.0       ! Consumption floor

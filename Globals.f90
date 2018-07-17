@@ -2,7 +2,7 @@ module Globals
   implicit none
 
   integer, parameter :: single = 0, married = 1, male = 1, female = 2
-  integer, parameter :: agents = 10000, periods = 20001
+  integer, parameter :: agents = 5000, periods = 20001
 
   ! Real parameters
   real(8), parameter :: cover_z = 2.d0 , cover_q = 2.d0, tiny = 1.0d-10
@@ -12,12 +12,13 @@ module Globals
   new_KLratio, new_average_z, new_T
 
   ! Real vectors
+  real(8), dimension(1:3) :: aux_KLratio, aux_average_z, aux_T
 
   ! Real matrices
-  real(8), dimension(:,:), allocatable :: shock_lm, shock_z, shock_g, shock_mu
+  real(8), dimension(:,:), allocatable :: shock_lm, shock_z
+  real(8), dimension(:,:,:), allocatable :: shock_g, shock_mu
   real(8), dimension(0:1, 0:1) :: IB_trans
-  real(8), dimension(0:1,1:2) :: Erate, Urate, Nrate, weights, aux_KLratio, &
-  aux_average_z, aux_T
+  real(8), dimension(0:1,1:2) :: Erate, Urate, Nrate, weights
   real(8), dimension(0:1,1:2,1:3,1:3) :: transitions
 
 CONTAINS
@@ -45,7 +46,7 @@ CONTAINS
   end function benefits
 
   ! Aggregates variables according to module weights
-  real(8) function aggregate(matrix)
+  real(8) function aggregate4(matrix)
     implicit none
     integer :: sex, mstatus
     real(8) :: aux_agg
@@ -57,8 +58,16 @@ CONTAINS
       aux_agg = aux_agg + weights(mstatus,sex)*matrix(mstatus,sex)
     end do
     end do
-    aggregate = aux_agg
-  end function
+    aggregate4 = aux_agg
+  end function aggregate4
+
+  real(8) function aggregate3(vector)
+    implicit none
+    real(8), dimension(1:3) :: vector
+
+    aggregate3 = (vector(1)*weights(0,1)) + (vector(2)*weights(0,2)) + &
+                 (vector(3)*(weights(1,1)+weights(1,2)))
+  end function aggregate3
 end module Globals
 
 !===== SINGLES GLOBALS ============================================================================

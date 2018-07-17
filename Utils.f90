@@ -357,4 +357,45 @@ CONTAINS
 
     my_ss = dist
   end function my_ss
+
+  !===== REGRID A DECISION RULE ===================================================================
+  function regrid(gp_old,grid_old,pf_old,gp_new,grid_new)
+    ! Uses interpolation to reshape a policy function to a new grid
+    implicit none
+
+    integer :: gp_old, gp_new
+    integer :: ind
+    integer, dimension(gp_new) :: regrid, pf_new
+    real(8) :: my_x, my_y
+    real(8), dimension(gp_old) :: grid_old, pf_old
+    real(8), dimension(gp_new) :: grid_new
+
+    do ind = 1, gp_new
+    ! Get the value from the new grid
+    my_x = grid_new(ind)
+
+    ! Interpolate using the old policy function
+    my_y = my_inter(grid_old,pf_old,gp_old,my_x)
+
+    ! Find closest position in the new grid for my_y
+    pf_new(ind) = my_closest(grid_new,gp_new,my_y)
+    end do
+
+    regrid = pf_new
+  end function regrid
+
+  !===== REALISE SHOCK ============================================================================
+  integer function realise(shock, myvec, gp)
+    implicit none
+    integer :: gp, ind_sh
+    real(8) :: shock, aux_sum
+    real(8), dimension(gp) :: myvec
+
+    aux_sum = 0.d0
+    do ind_sh = 1, gp
+    aux_sum  = aux_sum + myvec(ind_sh)
+    if (aux_sum.ge.shock) exit
+    end do
+    realise = ind_sh
+  end function realise
 end module Utils

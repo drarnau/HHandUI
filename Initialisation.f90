@@ -5,8 +5,8 @@ subroutine initialisation()
   implicit none
 
   allocate(shock_z(agents,periods))
-  allocate(shock_g(agents,periods))
-  allocate(shock_mu(agents,periods))
+  allocate(shock_g(1:2,agents,periods))
+  allocate(shock_mu(1:2,agents,periods))
   allocate(shock_lm(agents,periods))
 
   ! Set seed for fair price iteration
