@@ -43,7 +43,7 @@ subroutine initialisation()
 
   ! Guess average z and T
   average_z = 2.33
-  T = 1.28
+  T = 1.3
 
   ! Generate shocks
   call random_number(shock_z)
@@ -84,8 +84,8 @@ subroutine iniSingles(myidentity)
   a_values = loggrid(min_a, max_a, gp_a)
 
   ! Productivity process
-  ! call rouwenhorst(rho_z, 0.d0, sigma_epsilon, gp_z, cover_z, z_values, z_trans)
-  call tauchen(rho_z, sigma_epsilon, cover_z, gp_z, z_values, z_trans)
+  call rouwenhurst(rho_z, 0.d0, sigma_epsilon, gp_z, z_values, z_trans)
+  ! call tauchen(rho_z, sigma_epsilon, cover_z, gp_z, z_values, z_trans)
   z_values = exp(z_values)
   z_ssdist = my_ss(z_trans,gp_z)
 
@@ -109,52 +109,64 @@ subroutine iniMarried()
   auxf_z_trans(gp_z,gp_z)
 
   open(unit = 3, file = "calibrated_married.txt")
-  read(3,*) alpha(male)             ! Utility cost of working male
-  read(3,*) alpha(female)           ! Utility cost of working female
-  read(3,*) alpha(3)                ! Utility cost of joint work
-  read(3,*) beta                    ! Discount factor
-  read(3,*) c_min                   ! Consumption floor
-  read(3,*) chi                     ! Adult-equivalent scale
-  read(3,*) gamma_bar(male)         ! Average search cost male
-  read(3,*) gamma_bar(female)       ! Average search cost female
-  read(3,*) epsilon_gamma(male)     ! Standard deviation search cost male
-  read(3,*) epsilon_gamma(female)   ! Standard deviation search cost female
-  read(3,*) rho_z(male)             ! Persistence productivity male
-  read(3,*) rho_z(female)           ! Persistence productivity female
-  read(3,*) sigma_epsilon(male)     ! Standard deviation productivity male
-  read(3,*) sigma_epsilon(female)   ! Standard deviation productivity female
-  read(3,*) lambda_u(male)          ! Probability of finding a job for unemployed male
-  read(3,*) lambda_u(female)        ! Probability of finding a job for unemployed female
-  read(3,*) lambda_n(male)          ! Probability of finding a job for OLF male
-  read(3,*) lambda_n(female)        ! Probability of finding a job for OLF female
-  read(3,*) sigma(male)             ! Probability of losing a job for employed male
-  read(3,*) sigma(female)           ! Probability of losing a job for employed female
+  read(3,*) alpha(male)                   ! Utility cost of working male
+  read(3,*) alpha(female)                 ! Utility cost of working female
+  read(3,*) alpha(3)                      ! Utility cost of joint work
+  read(3,*) beta                          ! Discount factor
+  read(3,*) c_min                         ! Consumption floor
+  read(3,*) chi                           ! Adult-equivalent scale
+  read(3,*) gamma_bar(male)               ! Average search cost male
+  read(3,*) gamma_bar(female)             ! Average search cost female
+  read(3,*) epsilon_gamma(male)           ! Standard deviation search cost male
+  read(3,*) epsilon_gamma(female)         ! Standard deviation search cost female
+  read(3,*) rho_z(male,male)              ! Persistence productivity male
+  read(3,*) rho_z(male,female)            ! Persistence of female on male
+  read(3,*) rho_z(female,male)            ! Persistence of male on female
+  read(3,*) rho_z(female,female)          ! Persistence productivity female
+  read(3,*) sigma_epsilon(male,male)      ! Standard deviation productivity male
+  read(3,*) sigma_epsilon(male,female)    ! Covariance
+  read(3,*) sigma_epsilon(female,female)  ! Standard deviation productivity female
+  read(3,*) lambda_u(male)                ! Probability of finding a job for unemployed male
+  read(3,*) lambda_u(female)              ! Probability of finding a job for unemployed female
+  read(3,*) lambda_n(male)                ! Probability of finding a job for OLF male
+  read(3,*) lambda_n(female)              ! Probability of finding a job for OLF female
+  read(3,*) sigma(male)                   ! Probability of losing a job for employed male
+  read(3,*) sigma(female)                 ! Probability of losing a job for employed female
   close(3)
+
+  sigma_epsilon(female,male) = sigma_epsilon(male,female)
 
   ! Grid for assets
   a_values = loggrid(min_a, max_a, gp_a)
 
-  ! TEMPORARY Z PROCESS
-  call tauchen(rho_z(male), sigma_epsilon(male), cover_z, gp_z, auxm_z_values, auxm_z_trans)
-  call tauchen(rho_z(female), sigma_epsilon(female), cover_z, gp_z, auxf_z_values, auxf_z_trans)
+  ! Tauchen for Z process - Independent
+  ! call tauchen(rho_z(male,male), sigma_epsilon(male,male), &
+  !               cover_z, gp_z, auxm_z_values, auxm_z_trans)
+  ! call tauchen(rho_z(female,female), sigma_epsilon(female,female), &
+  !               cover_z, gp_z, auxf_z_values, auxf_z_trans)
+  !
+  ! fila = 0
+  ! do ind_m = 1, gp_z
+  ! do ind_f = 1, gp_z
+  !   fila = fila + 1
+  !   columna = 0
+  !   z_values(male,fila) = exp(auxm_z_values(ind_m))
+  !   z_values(female,fila) = exp(auxf_z_values(ind_f))
+  !   do ind_mp = 1, gp_z
+  !   do ind_fp = 1, gp_z
+  !     columna = columna + 1
+  !     z_trans(fila,columna) = auxm_z_trans(ind_m,ind_mp)*auxf_z_trans(ind_f,ind_fp)
+  !   end do
+  !   end do
+  ! end do
+  ! end do
 
-  fila = 0
+  ! VAR(1) for Z process
+  sigma_epsilon = sigma_epsilon**2
+  call discretize2vars(rho_z,sigma_epsilon,gp_z,0,z_trans,z_values)
+  z_values = exp(z_values)
 
-  do ind_m = 1, gp_z
-  do ind_f = 1, gp_z
-    fila = fila + 1
-    columna = 0
-    z_values(male,fila) = exp(auxm_z_values(ind_m))
-    z_values(female,fila) = exp(auxf_z_values(ind_f))
-  do ind_mp = 1, gp_z
-  do ind_fp = 1, gp_z
-    columna = columna + 1
-    z_trans(fila,columna) = auxm_z_trans(ind_m,ind_mp)*auxf_z_trans(ind_f,ind_fp)
-  end do
-  end do
-  end do
-  end do
-
+  ! Stationary distribution Z process
   z_ssdist = my_ss(z_trans,gp_z2)
 
   ! Search cost process

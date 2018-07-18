@@ -9,8 +9,11 @@
 0.030555  ! Standard deviation search cost male
 0.030555  ! Standard deviation search cost female
 0.996     ! Persistence productivity male
-0.966     ! Persistence productivity female
+0.0       ! Persistence of female on male
+0.0       ! Persistence of male on female
+0.996     ! Persistence productivity female
 0.096     ! Standard deviation productivity male
+0.0       ! Covariance
 0.096     ! Standard deviation productivity female
 0.282     ! Probability of finding a job for unemployed male
 0.282     ! Probability of finding a job for unemployed female

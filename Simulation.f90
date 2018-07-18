@@ -513,33 +513,7 @@ subroutine SimMarried()
   jtrans = 0.d0
   reps = 0
 
-  ! TO BE ERASED
-  ! open(unit=11, file='employed.txt')
-  ! open(unit=12, file='unemployed.txt')
-  ! open(unit=13, file='OLF.txt')
-  ! open(unit=14, file='labincome.txt')
-  ! open(unit=15, file='income.txt')
-  ! open(unit=16, file='taxrev.txt')
-  ! open(unit=17, file='bpaid.txt')
-  ! open(unit=18, file='assets.txt')
-  ! open(unit=19, file='z.txt')
-  ! open(unit=20, file='mtrans.txt')
-  ! open(unit=21, file='ftrans.txt')
-
   do ind_p = 1, periods-1 ! CAREFUL with last period
-    ! TO BE ERASED
-    ! employed = 0.d0
-    ! unemployed = 0.d0
-    ! OLF = 0.d0
-    ! tot_labincome = 0.d0
-    ! tot_income = 0.d0
-    ! tot_taxrev = 0.d0
-    ! tot_bpaid = 0.d0
-    ! tot_assets = 0.d0
-    ! tot_z = 0.d0
-    ! itrans = 0.d0
-    ! jtrans = 0.d0
-
   do ind_ag = 1, agents
     ! Initialise aux variables to 0
     income = 0.d0
@@ -1156,33 +1130,7 @@ subroutine SimMarried()
     if (ind_p.ge.(periods/2)) then
       reps = reps + 1
     end if
-
-    ! TO BE ERASED
-    ! write(11,*) employed
-    ! write(12,*) unemployed
-    ! write(13,*) OLF
-    ! write(14,*) tot_labincome
-    ! write(15,*) tot_income
-    ! write(16,*) tot_taxrev
-    ! write(17,*) tot_bpaid
-    ! write(18,*) tot_assets
-    ! write(19,*) tot_z
-    ! write(20,*) itrans(male,:,:)
-    ! write(21,*) itrans(female,:,:)
   end do ! Periods
-
-  ! TO BE ERASED
-  ! close(11)
-  ! close(12)
-  ! close(13)
-  ! close(14)
-  ! close(15)
-  ! close(16)
-  ! close(17)
-  ! close(18)
-  ! close(19)
-  ! close(20)
-  ! close(21)
 
   ! Compute averages
   tot_income = tot_income/real(reps)

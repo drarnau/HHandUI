@@ -3,9 +3,9 @@ program calibration
   use Utils
   implicit none
 
-  integer, parameter :: maxIter = 100
+  integer, parameter :: maxIter = 1
   integer :: iter, myms, mysex
-  real(8), parameter :: adj_KL = 0.25d0, adj_T = 0.5d0, adj_avgz = 0.5d0, &
+  real(8), parameter :: adj_KL = 0.5d0, adj_T = 0.5d0, adj_avgz = 0.5d0, &
                         tol_KL = 0.1 , tol_T = 0.1, tol_avgz = 0.1
                         ! tol_KL = 0.01 , tol_T = 1.0d-4, tol_avgz = 0.001
   real(8) :: start, finish, t_start, t_finish, error_KL, error_T, error_avgz

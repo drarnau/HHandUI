@@ -247,66 +247,6 @@ CONTAINS
     ((x_inter-xvector(x0))/(xvector(x1)-xvector(x0))))
   end function my_inter
 
-  !===== ROUWENHORST ==============================================================================
-  subroutine rouwenhorst(rho, mu_eps, sigma_eps, n, coverage, zvect, pmat)
-    ! discretizes an ar(1) process, with persistence parameter
-    ! 'rho', mean 'mu_eps' and standard deviation 'sigma_eps'
-    ! stores results in zvect(n) and pmat(n,n)
-    implicit none
-
-    real(8), intent(in):: rho, mu_eps, sigma_eps, coverage
-    integer, intent(in):: n
-    real(8), intent(out):: zvect(n)
-    real(8), intent(out):: pmat(n,n)
-
-    real(8) mu_z, sigma_z, q, eps
-    real(8), allocatable, dimension(:,:):: p1, p2
-    integer status, i, j
-
-    mu_z = mu_eps/(1-rho)
-    sigma_z = sigma_eps/sqrt(1-rho**2)
-
-    q = (rho+1)/2
-    eps = sqrt(dble(n-1)) * sigma_z
-    eps = coverage * sigma_z
-
-    if (n == 1) then
-        pmat = 1.0d0
-        zvect = mu_z
-        return
-    else if (n == 2) then
-        pmat = reshape((/q, 1-q, 1-q, q/),(/2,2/))
-        zvect = (/mu_z-eps,mu_z+eps/)
-        return
-    end if
-
-    allocate(p1(2,2),stat=status)
-    p1 = reshape((/q, 1-q, 1-q, q/),(/2,2/))
-
-    do i=2,n-1
-        allocate(p2(i+1,i+1),stat=status)
-        p2 = q * reshape( (/  (/(p1(:,j),0.0d0 ,j=1,i)/) ,  (/(0.0d0,j=1,i+1)/)    /), (/i+1,i+1/) ) + &
-             (1-q) * reshape( (/  (/(0.0d0,j=1,i+1)/), (/ (p1(:,j),0.0d0 ,j=1,i)/)   /) ,   (/i+1,i+1/) ) + &
-             (1-q) * reshape( (/  (/ (0.0d0,p1(:,j) ,j=1,i) /) ,  (/(0.0d0,j=1,i+1)/)  /), (/i+1,i+1/) ) + &
-             q * reshape( (/ (/(0.0d0,j=1,i+1)/), (/(0.0d0,p1(:,j) ,j=1,i)/)   /) ,   (/i+1,i+1/) )
-
-        p2(2:i,:) = p2(2:i,:)/2
-
-        deallocate(p1,stat=status)
-
-        if (i==n-1) then
-            pmat = p2
-        else
-            allocate(p1(i+1,i+1), stat=status)
-            p1 = p2
-        end if
-
-        deallocate(p2,stat=status)
-    end do
-
-    zvect = (/ (mu_z-eps + (coverage*eps)*i/(n-1),i=0,n-1) /)
-  end subroutine rouwenhorst
-
   !===== SET SEED =================================================================================
   subroutine setseed(my_seed)
     ! sets seed so random numbers
@@ -371,14 +311,14 @@ CONTAINS
     real(8), dimension(gp_new) :: grid_new
 
     do ind = 1, gp_new
-    ! Get the value from the new grid
-    my_x = grid_new(ind)
+      ! Get the value from the new grid
+      my_x = grid_new(ind)
 
-    ! Interpolate using the old policy function
-    my_y = my_inter(grid_old,pf_old,gp_old,my_x)
+      ! Interpolate using the old policy function
+      my_y = my_inter(grid_old,pf_old,gp_old,my_x)
 
-    ! Find closest position in the new grid for my_y
-    pf_new(ind) = my_closest(grid_new,gp_new,my_y)
+      ! Find closest position in the new grid for my_y
+      pf_new(ind) = my_closest(grid_new,gp_new,my_y)
     end do
 
     regrid = pf_new
@@ -393,9 +333,310 @@ CONTAINS
 
     aux_sum = 0.d0
     do ind_sh = 1, gp
-    aux_sum  = aux_sum + myvec(ind_sh)
-    if (aux_sum.ge.shock) exit
+      aux_sum  = aux_sum + myvec(ind_sh)
+      if (aux_sum.ge.shock) exit
     end do
     realise = ind_sh
   end function realise
+
+  !===== PRINT MATRIX TO SCREEN ===================================================================
+  subroutine write_array(a,decimals)
+    real(8) :: a(:,:)
+    integer             :: decimals, i, j
+    character(len=100)  :: colnum
+    character(len=100)  :: fmt,fmt2
+
+    write(colnum,*) ubound(a,2)
+    write(fmt,*) decimals
+    write(fmt2,*) 'f12.'//trim(fmt)
+
+    do i = lbound(a,1), ubound(a,1)
+      write(*, '('//trim(colnum)//trim(fmt2)//')' ) (a(i, j), j = lbound(a,2), ubound(a,2) )
+    end do
+    return
+  end subroutine write_array
+
+  !===== PRINT VECTOR TO SCREEN ===================================================================
+  subroutine write_vect(a,decimals)
+    real(8) :: a(:)
+    integer :: decimals, i
+    character(len=100) :: fmt,fmt2
+
+    write(fmt,*) decimals
+    write(fmt2,*) 'f12.'//trim(fmt)
+
+    do i = lbound(a,1), ubound(a,1)
+        write(*, '('//'1'//trim(fmt2)//')' ) (a(i) )
+    end do
+    return
+  end subroutine write_vect
+
+  !===== DISCRETIZE VAR ===========================================================================
+  subroutine discretize2vars(A0x,vex,nbar,ntune,pn,yn)
+    ! Taken from Gospodinov and Lkhagvasuren (2013)
+    ! SEE: https://sites.google.com/site/dlkhagva/var_mmm
+
+    real(8), intent(in)     :: A0x(2,2), vex(2,2)
+    integer, intent(in)     :: nbar, ntune
+    real(8), intent(out)    :: pn(nbar*nbar,nbar*nbar),yn(2,nbar*nbar)
+
+    real(8)                 :: pmat(2,nbar,nbar,nbar)
+    real(8)                 :: z0(nbar),pz0(nbar,nbar),pzz0(nbar,nbar),y1(nbar),y2(nbar)
+    real(8)                 :: mu,vact,r,vactx,vactz,rz
+    real(8)                 :: p,v1,v1x,px,pz
+    real(8), dimension(2,2) :: A0new, vynew, vyold, venew
+    integer                 :: nx,n,n1,n2
+    integer                 :: na,nb,dummy_exceed,nax,nbx,dummy_exceedx,naz,nbz
+    integer                 :: i,j,k,ix,ixx,iz
+    real(8), allocatable    :: B(:,:), bvectemp(:),dif1(:)
+
+    integer                 :: i1,i2,i3,i4,ix1,ix2
+
+    nx = ntune+1
+    n  = nbar
+    n1 = n
+    n2 = n
+
+    allocate(B(nx,6),bvectemp(nx),dif1(nx))
+    B  = 999.d0
+
+    call rouwenhurst(0.d0,0.d0,1.d0,n,z0,pz0)
+
+    y1 = z0
+    y2 = z0
+
+    call var_norm(A0x,vex,A0new,vynew,vyold,venew)
+
+    !print*, "A0x"
+    !call write_array(A0x,4)
+    !print*, "vex"
+    !call write_array(vex,4)
+    !print*, "A0new mat"
+    !call write_array(A0new,4)
+    !print*, "vyold mat"
+    !call write_array(vyold,4)
+    !print*, "vynew mat"
+    !call write_array(venew,4)
+    !print*, " "
+
+    do i = 1,n
+    do j = 1,n
+    do k = 1,2
+
+        mu      = A0new(k,1)*y1(i)+A0new(k,2)*y2(j)
+        vact    = venew(k,k)
+        r       = sqrt(1.d0-vact)
+
+        call rouwenhurst(r,0.d0,1.d0*sqrt(1.d0-r**2.d0),n,z0,pz0)
+        call cal_mu_fast(mu,vact,n,z0,v1,p,na,nb,dummy_exceed)
+
+        if (nx<2)   then
+            if (na==nb) then
+                pmat(k,i,j,:)=pz0(na,:)
+            else
+                pmat(k,i,j,:)=p*pz0(na,:)+(1-p)*pz0(nb,:)
+            endif
+        else
+            if (na==nb) then
+                pmat(k,i,j,:)=pz0(na,:)
+            else
+                ixx=0
+                do ix=1,nx
+                    vactx=max(1e-14,vact*(1.d0-(ix-1.d0)/(nx-1.d0)))
+                    call cal_mu_fast(mu,vactx,n,z0,v1x,px,nax,nbx,dummy_exceedx)
+                    if (abs(dummy_exceedx)<0.5) then
+                        ixx = ixx+1
+                        B(ixx,:) = (/ v1x, px, 1.d0*nax, 1.d0*nbx, 1.d0*dummy_exceedx, vactx /)
+                    endif
+                enddo
+
+                if (ixx<1)  then
+                    pmat(k,i,j,:) = p*pz0(na,:)+(1-p)*pz0(nb,:)
+                else
+                    bvectemp = B(:,1)-vact
+                    dif1 = abs(bvectemp)
+                    iz = minloc(dif1,dim=1)
+
+                    pz = B(iz,2);
+                    naz = int(B(iz,3))
+                    nbz = int(B(iz,4))
+                    vactz = B(iz,6)
+
+                    rz=sqrt(1-vactz)
+                    call rouwenhurst(rz,0.d0,1.d0*sqrt(1.d0-rz**2.d0),n,z0,pzz0)
+                    pmat(k,i,j,:) = pz*pzz0(naz,:)+(1-pz)*pzz0(nbz,:)
+                endif
+            endif
+
+        endif   ! end of (nx<2) conditional
+
+    enddo   ! k loop
+    enddo   ! j loop
+    enddo   ! i loop
+
+    ! CREATE TRANSITION MATRIX
+    ix2 = 0
+    do i1 = 1,n
+    do i2 = 1,n
+        ix2 = ix2 + 1
+        do i3 = 1,n
+        do i4 = 1,n
+            ix1 = (i3-1)*n+i4
+            Pn(ix1,ix2) = pmat(1,i1,i2,i3)*pmat(2,i1,i2,i4)
+        enddo
+        enddo
+    enddo
+    enddo
+
+    do i = 1,n*n
+        Pn(:,i) = Pn(:,i) / sum(Pn(:,i))
+    enddo
+
+    Pn = transpose(Pn)
+
+    ! CREATE MATRIX WITH DISCRETE VALUES
+    ix = 0
+    do i1 = 1,n
+    do i2 = 1,n
+        ix = ix + 1
+        Yn(1,ix) = y1(i1)
+        Yn(2,ix) = y2(i2)
+    enddo
+    enddo
+
+    Yn(1,:) = Yn(1,:)*sqrt(vyold(1,1))
+    Yn(2,:) = Yn(2,:)*sqrt(vyold(2,2))
+  end subroutine discretize2vars
+
+  !===== NORM =====================================================================================
+  subroutine var_norm(A,ve,Anew,vynew,vyold,venew)
+    implicit none
+    real(8), intent(in)    :: A(:,:), ve(:,:)
+    real(8), intent(out)   :: Anew(:,:),vynew(:,:),vyold(:,:),venew(:,:)
+    real(8), allocatable   :: v(:,:),v0(:,:)
+    integer                :: nn,i,j
+    real(8)                :: dif
+
+    dif = 100.0
+    nn  = ubound(A,1)
+
+    allocate(v0(nn,nn))
+    v0 = 0.d0
+
+    do while (dif>1e-12)
+        v=matmul(A,matmul(v0,transpose(A)))+ve
+        dif=maxval(v-v0)
+        v0=v
+    enddo
+
+    vyold=v0
+
+    do i=1,nn
+        venew(i,i)=ve(i,i)/vyold(i,i)
+        do j=1,nn
+            Anew(i,j)=A(i,j)*sqrt(vyold(j,j))/sqrt(vyold(i,i))
+        enddo
+    enddo
+
+    do i=1,nn
+    do j=1,nn
+        vynew(i,j) = vyold(i,j)/(sqrt(vyold(i,i))*sqrt(vyold(j,j)) )
+    enddo
+    enddo
+  end subroutine var_norm
+
+  subroutine cal_mu_fast(mu,v0,n,z,v1,p,na,nb,dummy_exceed)
+    real(8), intent(in)     :: mu,v0
+    integer, intent(in)     :: n
+    real(8), intent(in)     :: z(:)
+    real(8), intent(out)    :: v1,p
+    integer, intent(out)    :: na,nb,dummy_exceed
+    real(8), allocatable    :: zm(:)
+
+    allocate(zm(n))
+
+    zm = z*sqrt(1.d0-v0)
+
+    if ( mu>=zm(n) )    then
+        dummy_exceed=1
+        na=n
+        nb=n
+        p=0.d00
+        v1=v0
+    elseif ( mu<=zm(1) )    then
+        dummy_exceed=-1
+        na=1
+        nb=1
+        p=1.d0
+        v1=v0
+    else
+        dummy_exceed=0
+        na=1+floor((mu-zm(1))/(zm(2)-zm(1)))
+        nb=na+1
+
+        p=(zm(nb)-mu)/(zm(nb)-zm(na))
+
+        v1=v0+p*(1-p)*(zm(nb)-zm(na))**2.d0
+    endif
+  end subroutine cal_mu_fast
+
+  !===== ROUWENHORST ==============================================================================
+  subroutine rouwenhurst(rho, mu_eps, sigma_eps, n, zvect, pmat)
+    ! discretizes an ar(1) process, with persistence parameter
+    ! 'rho', mean 'mu_eps' and standard deviation 'sigma_eps'
+    ! stores results in zvect(n) and pmat(n,n)
+
+    implicit none
+
+    real(8), intent(in):: rho, mu_eps, sigma_eps   !, coverage
+    integer, intent(in):: n
+    real(8), intent(out):: zvect(n)
+    real(8), intent(out):: pmat(n,n)
+
+    real(8) mu_z, sigma_z, q, eps
+    real(8), allocatable, dimension(:,:):: p1, p2
+    integer status, i, j
+
+    mu_z = mu_eps/(1-rho)
+    sigma_z = sigma_eps/sqrt(1-rho**2.d0)
+
+    q = (rho+1)/2
+    eps = sqrt(dble(n-1)) * sigma_z
+
+    if (n == 1) then
+        pmat = 1.0d0
+        zvect = mu_z
+        return
+    else if (n == 2) then
+        pmat = reshape((/q, 1-q, 1-q, q/),(/2,2/))
+        zvect = (/mu_z-eps,mu_z+eps/)
+        return
+    end if
+
+    allocate(p1(2,2),stat=status)
+    p1 = reshape((/q, 1-q, 1-q, q/),(/2,2/))
+
+    do i=2,n-1
+        allocate(p2(i+1,i+1),stat=status)
+        p2 = q * reshape( (/  (/(p1(:,j),0.0d0 ,j=1,i)/) ,  (/(0.0d0,j=1,i+1)/)    /), (/i+1,i+1/) ) + &
+             (1-q) * reshape( (/  (/(0.0d0,j=1,i+1)/), (/ (p1(:,j),0.0d0 ,j=1,i)/)   /) ,   (/i+1,i+1/) ) + &
+             (1-q) * reshape( (/  (/ (0.0d0,p1(:,j) ,j=1,i) /) ,  (/(0.0d0,j=1,i+1)/)  /), (/i+1,i+1/) ) + &
+             q * reshape( (/ (/(0.0d0,j=1,i+1)/), (/(0.0d0,p1(:,j) ,j=1,i)/)   /) ,   (/i+1,i+1/) )
+
+        p2(2:i,:) = p2(2:i,:)/2
+
+        deallocate(p1,stat=status)
+
+        if (i==n-1) then
+            pmat = p2
+        else
+            allocate(p1(i+1,i+1), stat=status)
+            p1 = p2
+        end if
+
+        deallocate(p2,stat=status)
+    end do
+
+    zvect = (/ (mu_z-eps + (2.d0*eps)*i/(n-1),i=0,n-1) /)
+  end subroutine rouwenhurst
 end module Utils

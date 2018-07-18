@@ -139,14 +139,12 @@ module GlobalsMarried
 
   ! Real vectors
   real(8), dimension(1:3) :: alpha
-  real(8), dimension(1:2) :: gamma_bar, epsilon_gamma, rho_z, sigma_epsilon, lambda_u, lambda_n, &
-  sigma
-
-  ! Real vectors
+  real(8), dimension(1:2) :: gamma_bar, epsilon_gamma, lambda_u, lambda_n, sigma
   real(8), dimension(gp_a) :: a_values
+  real(8), dimension(gp_z2) :: z_ssdist
 
   ! Real matrices
-  real(8), dimension(gp_z2) :: z_ssdist
+  real(8), dimension(1:2,1:2) :: rho_z, sigma_epsilon
   real(8), dimension(1:2,gp_z2) :: z_values
   real(8), dimension(1:2,gp_gamma) :: gamma_values, gamma_trans
   real(8), dimension(gp_z2,gp_z2) :: z_trans
