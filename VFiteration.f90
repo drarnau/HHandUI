@@ -6,7 +6,7 @@ subroutine VFSingles()
 
   implicit none
 
-  integer, parameter :: maxIter = 20000, showError = 500
+  integer, parameter :: maxIter = 5000, showError = 500
   real(8), parameter :: tolerance = 1.0d-4
 
   integer :: iter, ind_a, ind_z, ind_g, ind_b
@@ -276,7 +276,7 @@ subroutine VFMarried()
 
   implicit none
 
-  integer, parameter :: maxIter = 20000, showError = 500
+  integer, parameter :: maxIter = 5000, showError = 500
   real(8), parameter :: tolerance = 1.0d-04
 
   integer :: iter, ind_a, ind_z, ind_b, ind_g, ind_b_f, ind_g_f
