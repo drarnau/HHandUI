@@ -4,6 +4,8 @@ subroutine initialisation()
 
   implicit none
 
+  integer :: ind_param
+
   allocate(shock_z(agents,periods))
   allocate(shock_g(1:2,agents,periods))
   allocate(shock_mu(1:2,agents,periods))
@@ -12,18 +14,18 @@ subroutine initialisation()
   ! Set seed for fair price iteration
   call setseed(12345)
 
-  ! Assigned
-  open(unit=1, file='assigned.txt')
-  read(1,*) mu    ! Average duration UI
-  read(1,*) b_0   ! Default replacement ratio
-  read(1,*) b_bar ! Benefits cap
-  read(1,*) theta ! Capital share of output in aggregate production function
-  read(1,*) delta ! Capital depreciation
-  read(1,*) tau   ! Proportional tax on labor income
-  read(1,*) weights(single,male) ! Share of single males in the economy
-  read(1,*) weights(single,female) ! Share of single females in the economy
-  read(1,*) weights(married,male) ! Share of married males in the economy
-  read(1,*) weights(married,female) ! Share of married females in the economy
+  ! Assigned parameters
+  weights(single,male) = 0.25     ! Share of single males in the economy
+  weights(single,female) = 0.25   ! Share of single females in the economy
+  weights(married,male) = 0.25    ! Share of married males in the economy
+  weights(married,female) = 0.25  ! Share of married females in the economy
+
+  ! Calibrated parameters
+  open(unit = 1, file = "calibrated.txt")
+  read(1,*) beta      ! Discount factor
+  do ind_param = 2, 26
+    read(1,*) aux_param(ind_param)
+  end do
   close(1)
 
   ! Check weights add up to 1
@@ -53,32 +55,34 @@ subroutine initialisation()
 end subroutine initialisation
 
 !===== SINGLES INITIALISATION =====================================================================
-subroutine iniSingles(myidentity)
+subroutine iniSingles(mysex)
   use Globals
   use GlobalsSingles
   use Utils
 
   implicit none
 
-  character(len=2), intent(in) :: myidentity
-  character(len=1024) :: format_string, aux_name
+  integer, intent(in) :: mysex
 
   ! Calibrated
   ! Name file
-  format_string = "(A11,A2,A4)"
-  write (aux_name,format_string), "calibrated_", myidentity, ".txt"
-  open(unit=2, file = aux_name)
-  read(2,*) alpha           ! Utility cost of working
-  read(2,*) beta            ! Discount factor
-  read(2,*) c_min           ! Consumption floor
-  read(2,*) gamma_bar       ! Average search cost
-  read(2,*) epsilon_gamma   ! Standard deviation search cost
-  read(2,*) rho_z           ! Persistence productivity process
-  read(2,*) sigma_epsilon   ! Standard deviation productivity process
-  read(2,*) lambda_u        ! Probability of finding a job for unemployed agents
-  read(2,*) lambda_n        ! Probability of finding a job for OLF agents
-  read(2,*) sigma           ! Probability of losing a job for employed agents
-  close(2)
+  if (mysex.eq.male) then
+    alpha = aux_param(2)          ! Utility cost of working
+    c_min = aux_param(3)          ! Consumption floor
+    epsilon_gamma = aux_param(4)  ! Standard deviation search cost
+    lambda_u = aux_param(5)       ! Probability of finding a job for unemployed agents
+    lambda_n = aux_param(6)       ! Probability of finding a job for OLF agents
+    sigma = aux_param(7)          ! Probability of losing a job for employed agents
+  elseif (mysex.eq.female) then
+    alpha = aux_param(8)          ! Utility cost of working
+    c_min = aux_param(9)         ! Consumption floor
+    epsilon_gamma = aux_param(10) ! Standard deviation search cost
+    lambda_u = aux_param(11)      ! Probability of finding a job for unemployed agents
+    lambda_n = aux_param(12)      ! Probability of finding a job for OLF agents
+    sigma = aux_param(13)         ! Probability of losing a job for employed agents
+  else
+    print *, "Error reading sex in iniSingles"
+  end if
 
   ! Grid for assets
   a_values = loggrid(min_a, max_a, gp_a)
@@ -90,6 +94,7 @@ subroutine iniSingles(myidentity)
   z_ssdist = my_ss(z_trans,gp_z)
 
   ! Search cost process
+  gamma_bar = (3.5d0/40.d0)*alpha
   gamma_values(1) = gamma_bar - epsilon_gamma
   gamma_values(2) = gamma_bar
   gamma_values(3) = gamma_bar + epsilon_gamma
@@ -104,46 +109,32 @@ subroutine iniMarried()
 
   implicit none
 
-  integer :: sex, ind_m, ind_f, ind_mp, ind_fp, fila, columna
-  real(8) :: auxm_z_values(gp_z), auxm_z_trans(gp_z,gp_z), auxf_z_values(gp_z), &
-  auxf_z_trans(gp_z,gp_z)
+  integer :: sex !, ind_m, ind_f, ind_mp, ind_fp, fila, columna
+  ! real(8) :: auxm_z_values(gp_z), auxm_z_trans(gp_z,gp_z), auxf_z_values(gp_z), &
+  ! auxf_z_trans(gp_z,gp_z)
 
-  open(unit = 3, file = "calibrated_married.txt")
-  read(3,*) alpha(male)                   ! Utility cost of working male
-  read(3,*) alpha(female)                 ! Utility cost of working female
-  read(3,*) alpha(3)                      ! Utility cost of joint work
-  read(3,*) beta                          ! Discount factor
-  read(3,*) c_min                         ! Consumption floor
-  read(3,*) chi                           ! Adult-equivalent scale
-  read(3,*) gamma_bar(male)               ! Average search cost male
-  read(3,*) gamma_bar(female)             ! Average search cost female
-  read(3,*) epsilon_gamma(male)           ! Standard deviation search cost male
-  read(3,*) epsilon_gamma(female)         ! Standard deviation search cost female
-  read(3,*) rho_z(male,male)              ! Persistence productivity male
-  read(3,*) rho_z(male,female)            ! Persistence of female on male
-  read(3,*) rho_z(female,male)            ! Persistence of male on female
-  read(3,*) rho_z(female,female)          ! Persistence productivity female
-  read(3,*) sigma_epsilon(male,male)      ! Standard deviation productivity male
-  read(3,*) sigma_epsilon(male,female)    ! Covariance
-  read(3,*) sigma_epsilon(female,female)  ! Standard deviation productivity female
-  read(3,*) lambda_u(male)                ! Probability of finding a job for unemployed male
-  read(3,*) lambda_u(female)              ! Probability of finding a job for unemployed female
-  read(3,*) lambda_n(male)                ! Probability of finding a job for OLF male
-  read(3,*) lambda_n(female)              ! Probability of finding a job for OLF female
-  read(3,*) sigma(male)                   ! Probability of losing a job for employed male
-  read(3,*) sigma(female)                 ! Probability of losing a job for employed female
-  close(3)
+  real(8), dimension(1:2,1:2) :: aux_rho, aux_sigma
 
-  sigma_epsilon(female,male) = sigma_epsilon(male,female)
+  alpha(male) = aux_param(14)           ! Utility cost of working male
+  alpha(female) = aux_param(15)         ! Utility cost of working female
+  alpha(male+female) = aux_param(16)    ! Utility cost of joint work
+  c_min = aux_param(17)                 ! Consumption floor
+  chi = aux_param(18)                   ! Adult-equivalent scale
+  epsilon_gamma(male) = aux_param(19)   ! Standard deviation search cost male
+  epsilon_gamma(female) = aux_param(20) ! Standard deviation search cost female
+  lambda_u(male) = aux_param(21)        ! Probability of finding a job for unemployed male
+  lambda_u(female) = aux_param(22)      ! Probability of finding a job for unemployed female
+  lambda_n(male) = aux_param(23)        ! Probability of finding a job for OLF male
+  lambda_n(female) = aux_param(24)      ! Probability of finding a job for OLF female
+  sigma(male) = aux_param(25)           ! Probability of losing a job for employed male
+  sigma(female) = aux_param(26)         ! Probability of losing a job for employed female
 
   ! Grid for assets
   a_values = loggrid(min_a, max_a, gp_a)
 
   ! Tauchen for Z process - Independent
-  ! call tauchen(rho_z(male,male), sigma_epsilon(male,male), &
-  !               cover_z, gp_z, auxm_z_values, auxm_z_trans)
-  ! call tauchen(rho_z(female,female), sigma_epsilon(female,female), &
-  !               cover_z, gp_z, auxf_z_values, auxf_z_trans)
+  ! call tauchen(rho_z, sigma_epsilon, cover_z, gp_z, auxm_z_values, auxm_z_trans)
+  ! call tauchen(rho_z, sigma_epsilon, cover_z, gp_z, auxf_z_values, auxf_z_trans)
   !
   ! fila = 0
   ! do ind_m = 1, gp_z
@@ -162,8 +153,14 @@ subroutine iniMarried()
   ! end do
 
   ! VAR(1) for Z process
-  sigma_epsilon = sigma_epsilon**2
-  call discretize2vars(rho_z,sigma_epsilon,gp_z,0,z_trans,z_values)
+  aux_rho = 0.d0
+  aux_rho(male,male) = rho_z
+  aux_rho(female,female) = rho_z
+  aux_sigma = 0.d0
+  aux_sigma(male,male) = sigma_epsilon
+  aux_sigma(female,female) = sigma_epsilon
+  aux_sigma = aux_sigma**2.d0
+  call discretize2vars(aux_rho,aux_sigma,gp_z,0,z_trans,z_values)
   z_values = exp(z_values)
 
   ! Stationary distribution Z process
@@ -171,6 +168,7 @@ subroutine iniMarried()
 
   ! Search cost process
   do sex = 1, 2
+    gamma_bar(sex) = (3.5d0/40.d0)*alpha(sex)
     gamma_values(sex,1) = gamma_bar(sex) - epsilon_gamma(sex)
     gamma_values(sex,2) = gamma_bar(sex)
     gamma_values(sex,3) = gamma_bar(sex) + epsilon_gamma(sex)

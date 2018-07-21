@@ -18,7 +18,6 @@ subroutine SimSingles(mysex)
   real(8), dimension(sim_gp_a) :: sim_a_values
   real(8), dimension(gp_z) :: aux_vec
   real(8), dimension(3,3) :: trans
-  character(len=1024) :: filename
 
   ! Create grid of assets for the simulation (easier to determine if distribution is stationary)
   sim_a_values = loggrid(min_a, max_a, sim_gp_a)
@@ -220,6 +219,7 @@ subroutine SimSingles(mysex)
   OLF = OLF/real(reps)
 
   ! Compute results
+  wealth(mysex) = tot_assets
   aux_KLratio(mysex) = tot_assets/tot_z
   aux_average_z(mysex) = tot_z/employed
   aux_T(mysex) = (tot_taxrev-tot_bpaid)/real(agents)
@@ -229,14 +229,6 @@ subroutine SimSingles(mysex)
   transitions(single,mysex,1, :) = trans(1,:)/sum(trans(1,:))
   transitions(single,mysex,2, :) = trans(2,:)/sum(trans(2,:))
   transitions(single,mysex,3, :) = trans(3,:)/sum(trans(3,:))
-
-  ! Print last vector of assets
-  write (filename, "(A9,I1,A4,I1,A4)") "assets_ms", single, "_sex", mysex, ".txt"
-  open(unit=11, file=trim(filename))
-  do ind_ag = 1, agents
-    write(11,*) sim_a_values(assets(ind_ag))
-  end do
-  close(11)
 
 
 CONTAINS
@@ -310,7 +302,6 @@ subroutine SimMarried()
   real(8), dimension(1:4) :: aux_UU, aux_UN, aux_NU, aux_NN
   real(8), dimension(1:2,1:3,1:3) :: itrans
   real(8), dimension(1:3,1:3,1:3,1:3) :: jtrans
-  character(len=1024) :: filename
 
   ! Create an auxilary array to sort joint states
   ! WW
@@ -1157,6 +1148,7 @@ subroutine SimMarried()
   end do
 
   ! Compute results
+  wealth(male+female) = tot_assets
   aux_KLratio(male+female) = tot_assets/tot_z
   aux_average_z(male+female) = tot_z/sum(employed)
   aux_T(male+female) = (tot_taxrev-tot_bpaid)/real(agents)
@@ -1168,14 +1160,6 @@ subroutine SimMarried()
     transitions(married,mysex,2, :) = itrans(mysex,2,:)/sum(itrans(mysex,2,:))
     transitions(married,mysex,3, :) = itrans(mysex,3,:)/sum(itrans(mysex,3,:))
   end do
-
-  ! Print last vector of assets
-  write (filename, "(A9,I1,A4)") "assets_ms", married, ".txt"
-  open(unit=11, file=trim(filename))
-  do ind_ag = 1, agents
-    write(11,*) sim_a_values(assets(ind_ag))
-  end do
-  close(11)
 
 CONTAINS
 

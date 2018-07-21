@@ -1,8 +1,8 @@
 # Compilation instructions
 1. Navigate to the folder where the `.f90` files are located. In my machine: `cd ~/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI`
 2. Create an executable file with gfortran:
-  - *Normal*: `gfortran -g -fcheck=all -fbacktrace -Wall -mcmodel=large Globals.f90 Utils.f90 Initialisation.f90 VFiteration.f90 Households.f90 Simulation.f90 Main.f90 -o main.out`
-  - Optimised: `gfortran -mcmodel=large Globals.f90 Utils.f90 Initialisation.f90 VFiteration.f90 Households.f90 Simulation.f90 Main.f90 -O3 -o main.out`
+  - *Normal*: `gfortran -g -fcheck=all -fbacktrace -Wall -mcmodel=large Globals.f90 Utils.f90 Initialisation.f90 VFiteration.f90 Households.f90 Simulation.f90 Difference.f90 Main.f90 -o main.out`
+  - Optimised: `gfortran -mcmodel=large Globals.f90 Utils.f90 Initialisation.f90 VFiteration.f90 Households.f90 Simulation.f90 Difference.f90 Main.f90 -O3 -o main.out`
 3. Execute: `./main`
 
 ## [gfortran flags](http://faculty.washington.edu/rjl/classes/am583s2013/notes/gfortran_flags.html)
