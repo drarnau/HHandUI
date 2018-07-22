@@ -128,7 +128,7 @@ subroutine Difference()
   ! PRINT RESULTS
     print *, "*************************************************************************"
     print '(a,f10.7,a,f10.7)', " Interest rate:", dint_rate, "    ", int_rate
-    print '(a,f10.7,a,f10.7)', " Married-single wealt ratio:", dmarsing_ratio, "    ", marsing_ratio
+    print '(a,f10.7,a,f10.7)', " Married-single wealth ratio:", dmarsing_ratio, "   ", marsing_ratio
     print *, "*************************************************************************"
     do myms = 0, 1
     do mysex = 1, 2
