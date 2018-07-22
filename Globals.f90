@@ -141,7 +141,7 @@ module GlobalsMarried
   integer, parameter :: gp_a = 48, gp_z = 9, gp_gamma = 3, gp_z2 = gp_z**2
 
   ! Real parameters
-  real(8), parameter :: min_a = 0, max_a = 2880.0
+  real(8), parameter :: min_a = 0, max_a = 1440.0
 
   ! Real variables
   real(8) :: c_min, chi

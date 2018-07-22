@@ -14,7 +14,7 @@ subroutine SimSingles(mysex)
   integer, dimension(sim_gp_a,gp_z) :: sim_N_pf, sim_W_pf
   integer, dimension(sim_gp_a,gp_z,gp_gamma,0:1) :: sim_U_pf
   real(8) :: employed, unemployed, OLF, tot_labincome, tot_income, tot_taxrev, tot_bpaid, &
-             tot_assets, tot_z, income, a, a_income, labincome, taxrev, bpaid, z, ap
+             tot_assets, tot_z, income, a, a_income, labincome, taxrev, bpaid, z, ap, top_assets
   real(8), dimension(sim_gp_a) :: sim_a_values
   real(8), dimension(gp_z) :: aux_vec
   real(8), dimension(3,3) :: trans
@@ -60,6 +60,7 @@ subroutine SimSingles(mysex)
   tot_z = 0.d0
   trans = 0.d0
   reps = 0
+  top_assets = 0.d0
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
   do ind_ag = 1, agents
@@ -197,6 +198,11 @@ subroutine SimSingles(mysex)
         OLF = OLF + 1.d0
       end if
     end if
+
+    ! Agents using top assets
+    if (assets(ind_ag).eq.sim_gp_a) then
+      top_assets = top_assets + 1.d0
+    end if
   end do ! Agents
     if (ind_p.ge.(periods/2)) then
       reps = reps + 1
@@ -229,6 +235,11 @@ subroutine SimSingles(mysex)
   transitions(single,mysex,1, :) = trans(1,:)/sum(trans(1,:))
   transitions(single,mysex,2, :) = trans(2,:)/sum(trans(2,:))
   transitions(single,mysex,3, :) = trans(3,:)/sum(trans(3,:))
+
+  ! Print share of agents using top assets
+  print '(a,I2,a,f7.4)', " Share of single", mysex, " HH using top assets:",&
+                                                              top_assets/(real(reps*agents))
+  print *, ""
 
 
 CONTAINS
@@ -293,7 +304,7 @@ subroutine SimMarried()
   integer, dimension(sim_gp_a,gp_z2,gp_gamma,gp_gamma,0:1,0:1) :: sim_UU_pf
 
   real(8) :: tot_labincome, tot_income, tot_taxrev, tot_bpaid, tot_assets, tot_z, income, a, &
-             a_income, labincome, taxrev, bpaid, ap
+             a_income, labincome, taxrev, bpaid, ap, top_assets
   real(8), dimension(1:2) :: z, employed, unemployed, OLF
   real(8), dimension(:), allocatable :: aux_vec
   real(8), dimension(sim_gp_a) :: sim_a_values
@@ -514,6 +525,7 @@ subroutine SimMarried()
   itrans = 0.d0
   jtrans = 0.d0
   reps = 0
+  top_assets = 0.d0
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
   do ind_ag = 1, agents
@@ -1123,6 +1135,11 @@ subroutine SimMarried()
         end if
       end do
     end if
+
+    ! Agents using top assets
+    if (assets(ind_ag).eq.sim_gp_a) then
+      top_assets = top_assets + 1.d0
+    end if
   end do ! Agents
     ! Update variables
     assets = new_assets
@@ -1160,6 +1177,10 @@ subroutine SimMarried()
     transitions(married,mysex,2, :) = itrans(mysex,2,:)/sum(itrans(mysex,2,:))
     transitions(married,mysex,3, :) = itrans(mysex,3,:)/sum(itrans(mysex,3,:))
   end do
+
+  ! Print share of agents using top assets
+  print '(a,f7.4)', " Share of married HH using top assets:", top_assets/(real(reps*agents))
+  print *, ""
 
 CONTAINS
 
