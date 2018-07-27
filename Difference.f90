@@ -158,8 +158,8 @@ CONTAINS
     implicit none
     real(8) :: data, model
 
-    fdiff = (log(data/model))**2.d0
-    ! fdiff = ((1.d0-data)/model)**2.d0
+    fdiff = (log(model/data))**2.d0
+    ! fdiff = ((1.d0-model)/data)**2.d0
   end function
 
 end subroutine Difference
