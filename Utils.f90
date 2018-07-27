@@ -520,7 +520,7 @@ CONTAINS
     dif = 100.0
     nn  = ubound(A,1)
 
-    allocate(v0(nn,nn))
+    allocate(v0(nn,nn),v(nn,nn)) 
     v0 = 0.d0
 
     do while (dif>1e-12)
