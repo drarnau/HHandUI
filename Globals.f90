@@ -2,7 +2,7 @@ module Globals
   implicit none
 
   integer, parameter :: single = 0, married = 1, male = 1, female = 2
-  integer, parameter :: agents = 5000, periods = 15001
+  integer, parameter :: agents = 5000, periods = 15001, printed = 500
 
   ! Real parameters
   real(8), parameter :: cover_z = 2.d0 , cover_q = 2.d0, tiny = 1.0d-10

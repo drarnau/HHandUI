@@ -3,6 +3,7 @@ subroutine SimSingles(mysex)
   use Globals
   use GlobalsSingles
   use Utils
+  use csv_file
 
   implicit none
 
@@ -18,6 +19,7 @@ subroutine SimSingles(mysex)
   real(8), dimension(sim_gp_a) :: sim_a_values
   real(8), dimension(gp_z) :: aux_vec
   real(8), dimension(3,3) :: trans
+  character(len=1024) :: aux_name
 
   ! Create grid of assets for the simulation (easier to determine if distribution is stationary)
   sim_a_values = loggrid(min_a, max_a, sim_gp_a)
@@ -61,6 +63,17 @@ subroutine SimSingles(mysex)
   trans = 0.d0
   reps = 0
   top_assets = 0.d0
+
+  ! Open CSV file where to store simulation
+  write (aux_name,"(A11,I1,A4)") "simulation_", mysex, ".csv"
+  open(unit=14, file=aux_name,status='unknown')
+  call csv_write(14,"ID",.false.)
+  call csv_write(14,"Period",.false.)
+  call csv_write(14,"Employment Status",.false.)
+  call csv_write(14,"Labour Income",.false.)
+  call csv_write(14,"Taxes Paid",.false.)
+  call csv_write(14,"Benefits Received",.false.)
+  call csv_write(14,"Wealth",.true.)
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
   do ind_ag = 1, agents
@@ -199,6 +212,17 @@ subroutine SimSingles(mysex)
       end if
     end if
 
+    ! Print to CSV
+    if (ind_p.ge.(periods-printed)) then
+      call csv_write(14,real(ind_ag),.false.)
+      call csv_write(14,real(ind_p),.false.)
+      call csv_write(14,real(LMstatus(ind_ag)),.false.)
+      call csv_write(14,labincome,.false.)
+      call csv_write(14,taxrev,.false.)
+      call csv_write(14,bpaid,.false.)
+      call csv_write(14,a,.true.)
+    end if
+
     ! Agents using top assets
     if (assets(ind_ag).eq.sim_gp_a) then
       top_assets = top_assets + 1.d0
@@ -212,6 +236,9 @@ subroutine SimSingles(mysex)
     LMstatus = new_LMstatus
     entitled = new_entitled
   end do ! Periods
+
+  ! Close csv file
+  close(14)
 
   ! Compute averages
   tot_income = tot_income/real(reps)
@@ -289,6 +316,7 @@ subroutine SimMarried()
   use Globals
   use GlobalsMarried
   use Utils
+  use csv_file
 
   implicit none
 
@@ -526,6 +554,17 @@ subroutine SimMarried()
   jtrans = 0.d0
   reps = 0
   top_assets = 0.d0
+
+  ! Open CSV file where to store simulation
+  open(unit=14, file='simulation_3.csv',status='unknown')
+  call csv_write(14,"ID",.false.)
+  call csv_write(14,"Period",.false.)
+  call csv_write(14,"Employment Status Male",.false.)
+  call csv_write(14,"Employment Status Female",.false.)
+  call csv_write(14,"Labour Income",.false.)
+  call csv_write(14,"Taxes Paid",.false.)
+  call csv_write(14,"Benefits Received",.false.)
+  call csv_write(14,"Wealth",.true.)
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
   do ind_ag = 1, agents
@@ -1140,6 +1179,18 @@ subroutine SimMarried()
     if (assets(ind_ag).eq.sim_gp_a) then
       top_assets = top_assets + 1.d0
     end if
+
+    ! Print to CSV
+    if (ind_p.ge.(periods-printed)) then
+      call csv_write(14,real(ind_ag),.false.)
+      call csv_write(14,real(ind_p),.false.)
+      call csv_write(14,real(LMstatus(male,ind_ag)),.false.)
+      call csv_write(14,real(LMstatus(female,ind_ag)),.false.)
+      call csv_write(14,labincome,.false.)
+      call csv_write(14,taxrev,.false.)
+      call csv_write(14,bpaid,.false.)
+      call csv_write(14,a,.true.)
+    end if
   end do ! Agents
     ! Update variables
     assets = new_assets
@@ -1150,6 +1201,9 @@ subroutine SimMarried()
       reps = reps + 1
     end if
   end do ! Periods
+
+  ! Close csv file
+  close(14)
 
   ! Compute averages
   tot_income = tot_income/real(reps)
