@@ -85,7 +85,7 @@ module GlobalsSingles
   implicit none
 
   ! Integer parameters
-  integer, parameter :: gp_a = 48, gp_z = 20, gp_gamma = 3
+  integer, parameter :: gp_a = 55, gp_z = 11, gp_gamma = 3
 
   ! Real parameters
   real(8), parameter :: min_a = 0, max_a = 1440.0
@@ -138,7 +138,7 @@ module GlobalsMarried
   implicit none
 
   ! Integer parameters
-  integer, parameter :: gp_a = 48, gp_z = 9, gp_gamma = 3, gp_z2 = gp_z**2
+  integer, parameter :: gp_a = 55, gp_z = 5, gp_gamma = 3, gp_z2 = gp_z**2
 
   ! Real parameters
   real(8), parameter :: min_a = 0, max_a = 1440.0
