@@ -109,7 +109,7 @@ CONTAINS
     implicit none
     real(8), intent(in) :: consumption
 
-    u = log(max(1.0d-320,consumption-c_min))
+    u = log(max(1.0d-11,consumption-c_min))
   end function u
 
   ! Creates the value functions J and V given N, U, and W
@@ -169,7 +169,7 @@ CONTAINS
     implicit none
     real(8), intent(in) :: consumption
 
-    u = log(max(1.0d-320,((consumption-c_min)/chi)))
+    u = log(max(1.0d-11,((consumption-c_min)/chi)))
   end function u
 
   ! Create value functions JJ, VJ, JV, and VV, given NN, NU, NW, UN, UU, UW, WW, WU, WN
