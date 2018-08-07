@@ -3,10 +3,10 @@ program calibration
   use Utils
   implicit none
 
-  integer, parameter :: maxIter = 1
+  integer, parameter :: maxIter = 100
   integer :: iter
   real(8), parameter :: adj_KL = 0.5d0, adj_T = 0.5d0, adj_avgz = 0.5d0, &
-                        tol_KL = 0.1 , tol_T = 0.1, tol_avgz = 0.1
+                        tol_KL = 0.01 , tol_T = 0.01, tol_avgz = 0.01
                         ! tol_KL = 0.01 , tol_T = 1.0d-4, tol_avgz = 0.001
   real(8) :: start, finish, t_start, t_finish, error_KL, error_T, error_avgz
 
@@ -55,9 +55,12 @@ program calibration
     new_average_z = aggregate3(aux_average_z)
 
     ! Compute errors
-    error_KL = abs(KLratio-new_KLratio)
-    error_T = abs(T-new_T)
-    error_avgz = abs(average_z-new_average_z)
+    ! error_KL = abs(KLratio-new_KLratio)
+    ! error_T = abs(T-new_T)
+    ! error_avgz = abs(average_z-new_average_z)
+    error_KL = abs(1-new_KLratio/KLratio)
+    error_T = abs(1-new_T/T)
+    error_avgz = abs(1-new_average_z/average_z)
 
     ! Print current situation
     print *, "Current equilibirum errors, at iteration:", iter
