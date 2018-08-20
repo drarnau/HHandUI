@@ -1,4 +1,4 @@
-/* 
+/*
 Choi & Valladares-Esteban (2018)
 
 This codes reads Monte-Carlo simulation data from the model and generates results
@@ -13,24 +13,24 @@ set trace off
 local dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/"
 
 // Working directory
-cd "/home/arnau/Desktop/Households and UI/QEresubmission/code/HHandUI"
+cd "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI/"
 
 // Read csv files
 forval f = 1/3 {
-	preserve 
+	preserve
 	import delimited simulation_`f'.csv, varnames(1) clear
 	gen HHtype = `f'
 	save temp, replace
 	restore
 	append using temp
 	}
-	
+
 erase temp.dta
 
 // Label HHtype variable
 label var HHtype "Household type"
 label define lab_hhtype  1 "Single Men" 2 "Single Women" 3 "Married Household"
-lab val HHtype lab_hhtype 
+lab val HHtype lab_hhtype
 
 // Married dummy
 gen married = 1 if HHtype == 3
@@ -42,7 +42,7 @@ lab val married lab_married
 // Histagrams
 	// All
 	hist wealth, width(10)
-	
+
 	// Married and single
 	twoway 	(hist wealth if married==1, width(10) color(green)) ///
 		(hist wealth if married==0, width(10) ///
@@ -59,13 +59,13 @@ forval m = 0/1 {
 	local gini_`m' = r(gini)
 	}
 	local rmean = `mean_1'/`mean_0'
-	
+
 	local rcv = `cv_1'/`cv_0'
 	local rgini = `gini_1'/`gini_0'
-	
+
 	foreach z in "rmean" "rcv" "rgini" {
-		if ``z'' > 1 { 
-			local `z' = substr("``z''",1,6) 
+		if ``z'' > 1 {
+			local `z' = substr("``z''",1,6)
 			}
 		else {
 			local `z' = substr("``z''",1,5)
@@ -78,20 +78,20 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	display "\begin{centering}"
 	display "\begin{tabular}{lrr}"
 	display " & Data & Model\tabularnewline"
-	display "\hline" 
-	display "\hline" 
+	display "\hline"
+	display "\hline"
 	display "Average 			& 2.8481 	& `rmean' 	\tabularnewline"
 	display "Coefficient of Variation 	& 0.7575 	& `rcv' 	\tabularnewline"
 	display "Gini Index 			& 0.9512 	& `rgini' 	\tabularnewline"
-	display "\hline" 
+	display "\hline"
 	display "\end{tabular}"
 	display "\end{centering}"
 	qui log close
-	} // End loop z	
-	
+	} // End loop z
+
 // Transitions by quintiles
 xtile quintile = wealth, nquantiles(5)
- 
+
 // Quaintile dummies
 forval q = 1/5 {
 	gen quint_`q' = 1 if quintile == `q'
@@ -105,7 +105,7 @@ forval q = 0/5 { // Iterate over all possible quintile groups
 		foreach g in "" "male" "female" {
 			qui replace aux = 1 if status`g'today == `td' & status`g'tomorrow == `tw' & quint_`q' == 1
 			qui replace aux = 0 if status`g'today == `td' & aux == . & quint_`q' == 1
-			
+
 			}
 		qui su aux
 		local trans_`td'`tw'_q`q' = `r(mean)'
@@ -118,17 +118,17 @@ forval q = 1/5 {
 forval td = 1/3 { // Today
 forval tw = 1/3 { // Tomorrow
 	local t`td'`tw'_q`q' = `trans_`td'`tw'_q`q'' / `trans_`td'`tw'_q0'
-	if `t`td'`tw'_q`q'' > 1 { 
-		local t`td'`tw'_q`q' = substr("`t`td'`tw'_q`q''",1,4) 
+	if `t`td'`tw'_q`q'' > 1 {
+		local t`td'`tw'_q`q' = substr("`t`td'`tw'_q`q''",1,4)
 		}
 	else if `t`td'`tw'_q`q'' == 1 {
-		local t`td'`tw'_q`q' = "1.00" 
+		local t`td'`tw'_q`q' = "1.00"
 		}
 	else {
 		local t`td'`tw'_q`q' = substr("`t`td'`tw'_q`q''",1,3)
 		local t`td'`tw'_q`q' = subinstr("`t`td'`tw'_q`q''",".","0.",1)
 		}
-		
+
 	display `t`td'`tw'_q`q''
 	}
 	}
@@ -140,10 +140,10 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	display "\begin{centering}"
 	display "\begin{tabular}{cccccccccccc}"
 	display "& \multicolumn{5}{c}{Data} &  & \multicolumn{5}{c}{Model}\tabularnewline"
-	display "\cline{2-6} \cline{8-12}" 
+	display "\cline{2-6} \cline{8-12}"
 	display " & Q1 & Q2 & Q3 & Q4 & Q5 &  & Q1 & Q2 & Q3 & Q4 & Q5\tabularnewline"
-	display "\hline" 
-	display "\hline" 
+	display "\hline"
+	display "\hline"
 	display "EE & 0.95 & 0.99 & 1.01 & 1.02 & 1.02 & EE & `t11_q1' & `t11_q2' & `t11_q3' & `t11_q4' & `t11_q5' \tabularnewline"
 	display "EU & 1.82 & 1.15 & 0.87 & 0.70 & 0.54 & EU & `t12_q1' & `t12_q2' & `t12_q3' & `t12_q4' & `t12_q5' \tabularnewline"
 	display "EN & 1.15 & 0.92 & 0.91 & 0.97 & 1.09 & EN & `t13_q1' & `t13_q2' & `t13_q3' & `t13_q4' & `t13_q5' \tabularnewline"
@@ -157,22 +157,4 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	display "\end{tabular}"
 	display "\end{centering}"
 	qui log close
-	} // End loop z	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	} // End loop z
