@@ -160,7 +160,7 @@ subroutine iniMarried()
   aux_sigma(male,male) = sigma_epsilon
   aux_sigma(female,female) = sigma_epsilon
   aux_sigma = aux_sigma**2.d0
-  call discretize2vars(aux_rho,aux_sigma,gp_z,0,z_trans,z_values)
+  call discretize2vars(aux_rho,aux_sigma,gp_z,1000,z_trans,z_values)
   z_values = exp(z_values)
 
   ! Stationary distribution Z process
