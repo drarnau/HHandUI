@@ -2,7 +2,7 @@ module Globals
   implicit none
 
   integer, parameter :: single = 0, married = 1, male = 1, female = 2
-  integer, parameter :: agents = 5000, periods = 15001, printed = 500
+  integer, parameter :: agents = 10000, periods = 5001, printed = 500
 
   ! Real parameters
   real(8), parameter :: cover_z = 2.d0 , cover_q = 2.d0, tiny = 1.0d-10
@@ -85,7 +85,7 @@ module GlobalsSingles
   implicit none
 
   ! Integer parameters
-  integer, parameter :: gp_a = 55, gp_z = 9, gp_gamma = 3
+  integer, parameter :: gp_a = 55, gp_z = 15, gp_gamma = 3
 
   ! Real parameters
   real(8), parameter :: min_a = 0, max_a = 1440.0
@@ -138,7 +138,7 @@ module GlobalsMarried
   implicit none
 
   ! Integer parameters
-  integer, parameter :: gp_a = 55, gp_z = 5, gp_gamma = 3, gp_z2 = gp_z**2
+  integer, parameter :: gp_a = 55, gp_z = 9, gp_gamma = 3, gp_z2 = gp_z**2
 
   ! Real parameters
   real(8), parameter :: min_a = 0, max_a = 2880.0
