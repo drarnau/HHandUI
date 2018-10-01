@@ -2,25 +2,25 @@
 0.51625   ! Utility cost of working, single male
 0.00000   ! Consumption floor, single male
 0.03155   ! Standard deviation search cost, single male
-0.30075   ! Probability of finding a job for unemployed agents, single male
+0.33200   ! Probability of finding a job for unemployed agents, single male
 0.17252   ! Probability of finding a job for OLF agents, single male
 0.01714   ! Probability of losing a job for employed agents, single male
 0.48500   ! Utility cost of working, single female
 0.00000   ! Consumption floor, single female
 0.03456   ! Standard deviation search cost, single female
 0.28403   ! Probability of finding a job for unemployed agents, single female
-0.21783   ! Probability of finding a job for OLF agents, single female
+0.20220   ! Probability of finding a job for OLF agents, single female
 0.01180   ! Probability of losing a job for employed agents, single female
 0.17156   ! Utility cost of working married male
-0.32172   ! Utility cost of working married female
+0.36078   ! Utility cost of working married female
 0.00100   ! Utility cost of joint work
-1.16766   ! Consumption floor, married
+1.40203   ! Consumption floor, married
 1.70000   ! Adult-equivalent scale, married
-0.00493   ! Standard deviation search cost married male
-0.02255   ! Standard deviation search cost married female
+0.01274   ! Standard deviation search cost married male
+0.03036   ! Standard deviation search cost married female
 0.67919   ! Probability of finding a job for unemployed married male
 0.34182   ! Probability of finding a job for unemployed married female
 0.68375   ! Probability of finding a job for OLF married male
-0.29470   ! Probability of finding a job for OLF married female
+0.31033   ! Probability of finding a job for OLF married female
 0.02271   ! Probability of losing a job for employed married male
 0.01780   ! Probability of losing a job for employed married female
