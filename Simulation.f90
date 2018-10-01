@@ -16,7 +16,8 @@ subroutine SimSingles(mysex, gen_output)
   integer, dimension(sim_gp_a,gp_z) :: sim_N_pf, sim_W_pf
   integer, dimension(sim_gp_a,gp_z,gp_gamma,0:1) :: sim_U_pf
   real(8) :: employed, unemployed, OLF, tot_labincome, tot_income, tot_taxrev, tot_bpaid, &
-             tot_assets, tot_z, income, a, a_income, labincome, taxrev, bpaid, z, ap, top_assets
+             tot_assets, tot_z, income, a, a_income, labincome, taxrev, bpaid, z, ap, top_assets, &
+             value_VF
   real(8), dimension(sim_gp_a) :: sim_a_values
   real(8), dimension(gp_z) :: aux_vec
   real(8), dimension(3,3) :: trans
@@ -71,12 +72,15 @@ subroutine SimSingles(mysex, gen_output)
     open(unit=14, file=aux_name,status='unknown')
     call csv_write(14,"ID",.false.)
     call csv_write(14,"Period",.false.)
-    call csv_write(14,"Status today",.false.)
-    call csv_write(14,"Status tomorrow",.false.)
+    call csv_write(14,"Status Today",.false.)
+    call csv_write(14,"Status Tomorrow",.false.)
     call csv_write(14,"Labour Income",.false.)
     call csv_write(14,"Taxes Paid",.false.)
+    call csv_write(14,"Benefits Entitlement Today",.false.)
+    call csv_write(14,"Benefits Entitlement Tomorrow",.false.)
     call csv_write(14,"Benefits Received",.false.)
-    call csv_write(14,"Wealth",.true.)
+    call csv_write(14,"Wealth",.false.)
+    call csv_write(14,"Value VF",.true.)
   end if
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
@@ -225,8 +229,20 @@ subroutine SimSingles(mysex, gen_output)
         call csv_write(14,real(new_LMstatus(ind_ag)),.false.)
         call csv_write(14,labincome,.false.)
         call csv_write(14,taxrev,.false.)
+        call csv_write(14,real(entitled(ind_ag)),.false.)
+        call csv_write(14,real(new_entitled(ind_ag)),.false.)
         call csv_write(14,bpaid,.false.)
-        call csv_write(14,a,.true.)
+        call csv_write(14,a,.false.)
+        ! Compute value of value function for current agent
+        if (LMstatus(ind_ag).eq.1) then
+          value_VF = my_inter(a_values,W_vf(:,myshock_z(ind_ag,ind_p)),gp_a,a)
+        elseif(LMstatus(ind_ag).eq.2) then
+          value_VF = my_inter(a_values,&
+            U_vf(:,myshock_z(ind_ag,ind_p),myshock_g(ind_ag,ind_p),entitled(ind_ag)),gp_a,a)
+        else
+          value_VF = my_inter(a_values,N_vf(:,myshock_z(ind_ag,ind_p)),gp_a,a)
+        end if
+        call csv_write(14,value_VF,.true.)
       end if
     end if
 
@@ -342,7 +358,7 @@ subroutine SimMarried(gen_output)
   integer, dimension(sim_gp_a,gp_z2,gp_gamma,gp_gamma,0:1,0:1) :: sim_UU_pf
 
   real(8) :: tot_labincome, tot_income, tot_taxrev, tot_bpaid, tot_assets, tot_z, income, a, &
-             a_income, labincome, taxrev, bpaid, ap, top_assets
+             a_income, labincome, taxrev, bpaid, ap, top_assets, value_VF
   real(8), dimension(1:2) :: z, employed, unemployed, OLF
   real(8), dimension(:), allocatable :: aux_vec
   real(8), dimension(sim_gp_a) :: sim_a_values
@@ -576,8 +592,13 @@ subroutine SimMarried(gen_output)
     call csv_write(14,"Status Female Tomorrow",.false.)
     call csv_write(14,"Labour Income",.false.)
     call csv_write(14,"Taxes Paid",.false.)
+    call csv_write(14,"Benefits Entitlement Male Today",.false.)
+    call csv_write(14,"Benefits Entitlement Male Tomorrow",.false.)
+    call csv_write(14,"Benefits Entitlement Female Today",.false.)
+    call csv_write(14,"Benefits Entitlement Female Tomorrow",.false.)
     call csv_write(14,"Benefits Received",.false.)
-    call csv_write(14,"Wealth",.true.)
+    call csv_write(14,"Wealth",.false.)
+    call csv_write(14,"Value_VF",.true.)
   end if
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
@@ -1205,8 +1226,45 @@ subroutine SimMarried(gen_output)
         call csv_write(14,real(new_LMstatus(female,ind_ag)),.false.)
         call csv_write(14,labincome,.false.)
         call csv_write(14,taxrev,.false.)
+        call csv_write(14,real(entitled(male,ind_ag)),.false.)
+        call csv_write(14,real(new_entitled(male,ind_ag)),.false.)
+        call csv_write(14,real(entitled(female,ind_ag)),.false.)
+        call csv_write(14,real(new_entitled(female,ind_ag)),.false.)
         call csv_write(14,bpaid,.false.)
-        call csv_write(14,a,.true.)
+        call csv_write(14,a,.false.)
+        ! Compute value of value function for current household
+        if ((LMstatus(male,ind_ag).eq.1).and.(LMstatus(female,ind_ag).eq.1)) then
+          value_VF = my_inter(a_values,WW_vf(:,myshock_z(ind_ag,ind_p)),gp_a,a)
+        elseif ((LMstatus(male,ind_ag).eq.1).and.(LMstatus(female,ind_ag).eq.2)) then
+          value_VF = my_inter(a_values,&
+          WU_vf(:,myshock_z(ind_ag,ind_p),myshock_g(female,ind_ag,ind_p),entitled(female,ind_ag)),&
+          gp_a,a)
+        elseif ((LMstatus(male,ind_ag).eq.1).and.(LMstatus(female,ind_ag).eq.3)) then
+          value_VF = my_inter(a_values,WN_vf(:,myshock_z(ind_ag,ind_p)),gp_a,a)
+        elseif ((LMstatus(male,ind_ag).eq.2).and.(LMstatus(female,ind_ag).eq.1)) then
+          value_VF = my_inter(a_values,&
+          UW_vf(:,myshock_z(ind_ag,ind_p),myshock_g(male,ind_ag,ind_p),entitled(male,ind_ag)),&
+          gp_a,a)
+        elseif ((LMstatus(male,ind_ag).eq.2).and.(LMstatus(female,ind_ag).eq.2)) then
+          value_VF = my_inter(a_values,&
+          UU_vf(:,myshock_z(ind_ag,ind_p),&
+            myshock_g(male,ind_ag,ind_p),myshock_g(female,ind_ag,ind_p),&
+            entitled(male,ind_ag),entitled(female,ind_ag)),&
+          gp_a,a)
+        elseif ((LMstatus(male,ind_ag).eq.2).and.(LMstatus(female,ind_ag).eq.3)) then
+          value_VF = my_inter(a_values,&
+          UN_vf(:,myshock_z(ind_ag,ind_p),myshock_g(male,ind_ag,ind_p),entitled(male,ind_ag)),&
+          gp_a,a)
+        elseif ((LMstatus(male,ind_ag).eq.3).and.(LMstatus(female,ind_ag).eq.1)) then
+          value_VF = my_inter(a_values,NW_vf(:,myshock_z(ind_ag,ind_p)),gp_a,a)
+        elseif ((LMstatus(male,ind_ag).eq.3).and.(LMstatus(female,ind_ag).eq.2)) then
+          value_VF = my_inter(a_values,&
+          NU_vf(:,myshock_z(ind_ag,ind_p),myshock_g(female,ind_ag,ind_p),entitled(female,ind_ag)),&
+          gp_a,a)
+        elseif ((LMstatus(male,ind_ag).eq.3).and.(LMstatus(female,ind_ag).eq.3)) then
+          value_VF = my_inter(a_values,NN_vf(:,myshock_z(ind_ag,ind_p)),gp_a,a)
+        end if
+        call csv_write(14,value_VF,.true.)
       end if
     end if
   end do ! Agents

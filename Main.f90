@@ -86,9 +86,9 @@ program calibration
   call Difference()
 
   ! Simulate and print simulation output
-  call SimSingles(1,.TRUE.) ! Single males
-  call SimSingles(2,.TRUE.) ! Single females
-  call SimMarried(.TRUE.) ! Married
+  call SimSingles(1,.true.) ! Single males
+  call SimSingles(2,.true.) ! Single females
+  call SimMarried(.true.) ! Married
 
   call cpu_time(finish)
   print *, "Total time to solve the model:"
