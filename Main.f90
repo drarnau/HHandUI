@@ -85,6 +85,11 @@ program calibration
   ! Compute distance between model and data and print results
   call Difference()
 
+  ! Simulate and print simulation output
+  call SimSingles(1,.TRUE.) ! Single males
+  call SimSingles(2,.TRUE.) ! Single females
+  call SimMarried(.TRUE.) ! Married
+
   call cpu_time(finish)
   print *, "Total time to solve the model:"
   call mytime(finish-start)

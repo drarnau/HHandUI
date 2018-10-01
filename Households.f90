@@ -6,7 +6,7 @@ subroutine Singles(mysex)
 
   call iniSingles(mysex)
   call VFSingles()
-  call SimSingles(mysex)
+  call SimSingles(mysex,.FALSE.)
 end subroutine Singles
 
 !===== MARRIED ====================================================================================
@@ -15,6 +15,6 @@ subroutine MarriedHH()
 
   call iniMarried()
   call VFMarried()
-  call SimMarried()
+  call SimMarried(.FALSE.)
 
 end subroutine MarriedHH

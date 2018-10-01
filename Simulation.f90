@@ -1,5 +1,5 @@
 !===== SIMULATION SINGLES =========================================================================
-subroutine SimSingles(mysex)
+subroutine SimSingles(mysex, gen_output)
   use Globals
   use GlobalsSingles
   use Utils
@@ -7,6 +7,7 @@ subroutine SimSingles(mysex)
 
   implicit none
 
+  logical, intent(in) :: gen_output
   integer, intent(in) :: mysex
   integer, parameter :: sim_gp_a = 1000
   integer :: ind_ag, ind_p, ind_z, ind_g, ind_b, reps
@@ -65,16 +66,18 @@ subroutine SimSingles(mysex)
   top_assets = 0.d0
 
   ! Open CSV file where to store simulation
-  write (aux_name,"(A11,I1,A4)") "simulation_", mysex, ".csv"
-  open(unit=14, file=aux_name,status='unknown')
-  call csv_write(14,"ID",.false.)
-  call csv_write(14,"Period",.false.)
-  call csv_write(14,"Status today",.false.)
-  call csv_write(14,"Status tomorrow",.false.)
-  call csv_write(14,"Labour Income",.false.)
-  call csv_write(14,"Taxes Paid",.false.)
-  call csv_write(14,"Benefits Received",.false.)
-  call csv_write(14,"Wealth",.true.)
+  if (gen_output) then
+    write (aux_name,"(A11,I1,A4)") "simulation_", mysex, ".csv"
+    open(unit=14, file=aux_name,status='unknown')
+    call csv_write(14,"ID",.false.)
+    call csv_write(14,"Period",.false.)
+    call csv_write(14,"Status today",.false.)
+    call csv_write(14,"Status tomorrow",.false.)
+    call csv_write(14,"Labour Income",.false.)
+    call csv_write(14,"Taxes Paid",.false.)
+    call csv_write(14,"Benefits Received",.false.)
+    call csv_write(14,"Wealth",.true.)
+  end if
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
   do ind_ag = 1, agents
@@ -214,15 +217,17 @@ subroutine SimSingles(mysex)
     end if
 
     ! Print to CSV
-    if (ind_p.ge.(periods-printed)) then
-      call csv_write(14,real(ind_ag),.false.)
-      call csv_write(14,real(ind_p),.false.)
-      call csv_write(14,real(LMstatus(ind_ag)),.false.)
-      call csv_write(14,real(new_LMstatus(ind_ag)),.false.)
-      call csv_write(14,labincome,.false.)
-      call csv_write(14,taxrev,.false.)
-      call csv_write(14,bpaid,.false.)
-      call csv_write(14,a,.true.)
+    if (gen_output) then
+      if (ind_p.ge.(periods-printed)) then
+        call csv_write(14,real(ind_ag),.false.)
+        call csv_write(14,real(ind_p),.false.)
+        call csv_write(14,real(LMstatus(ind_ag)),.false.)
+        call csv_write(14,real(new_LMstatus(ind_ag)),.false.)
+        call csv_write(14,labincome,.false.)
+        call csv_write(14,taxrev,.false.)
+        call csv_write(14,bpaid,.false.)
+        call csv_write(14,a,.true.)
+      end if
     end if
 
     ! Agents using top assets
@@ -240,7 +245,9 @@ subroutine SimSingles(mysex)
   end do ! Periods
 
   ! Close csv file
-  close(14)
+  if (gen_output) then
+    close(14)
+  end if
 
   ! Compute averages
   tot_income = tot_income/real(reps)
@@ -314,7 +321,7 @@ CONTAINS
 end subroutine SimSingles
 
 !===== SIMULATION MARRIED =========================================================================
-subroutine SimMarried()
+subroutine SimMarried(gen_output)
   use Globals
   use GlobalsMarried
   use Utils
@@ -322,6 +329,7 @@ subroutine SimMarried()
 
   implicit none
 
+  logical, intent(in) :: gen_output
   integer, parameter :: sim_gp_a = 1000
   integer :: ind_ag, ind_p, ind_z, ind_g, ind_b, ind_g_f, ind_b_f, reps, mysex
   integer, dimension(agents) :: assets, new_assets
@@ -558,17 +566,19 @@ subroutine SimMarried()
   top_assets = 0.d0
 
   ! Open CSV file where to store simulation
-  open(unit=14, file='simulation_3.csv',status='unknown')
-  call csv_write(14,"ID",.false.)
-  call csv_write(14,"Period",.false.)
-  call csv_write(14,"Status Male Today",.false.)
-  call csv_write(14,"Status Male Tomorrow",.false.)
-  call csv_write(14,"Status Female Today",.false.)
-  call csv_write(14,"Status Female Tomorrow",.false.)
-  call csv_write(14,"Labour Income",.false.)
-  call csv_write(14,"Taxes Paid",.false.)
-  call csv_write(14,"Benefits Received",.false.)
-  call csv_write(14,"Wealth",.true.)
+  if (gen_output) then
+    open(unit=14, file='simulation_3.csv',status='unknown')
+    call csv_write(14,"ID",.false.)
+    call csv_write(14,"Period",.false.)
+    call csv_write(14,"Status Male Today",.false.)
+    call csv_write(14,"Status Male Tomorrow",.false.)
+    call csv_write(14,"Status Female Today",.false.)
+    call csv_write(14,"Status Female Tomorrow",.false.)
+    call csv_write(14,"Labour Income",.false.)
+    call csv_write(14,"Taxes Paid",.false.)
+    call csv_write(14,"Benefits Received",.false.)
+    call csv_write(14,"Wealth",.true.)
+  end if
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
   do ind_ag = 1, agents
@@ -1185,17 +1195,19 @@ subroutine SimMarried()
     end if
 
     ! Print to CSV
-    if (ind_p.ge.(periods-printed)) then
-      call csv_write(14,real(ind_ag),.false.)
-      call csv_write(14,real(ind_p),.false.)
-      call csv_write(14,real(LMstatus(male,ind_ag)),.false.)
-      call csv_write(14,real(new_LMstatus(male,ind_ag)),.false.)
-      call csv_write(14,real(LMstatus(female,ind_ag)),.false.)
-      call csv_write(14,real(new_LMstatus(female,ind_ag)),.false.)
-      call csv_write(14,labincome,.false.)
-      call csv_write(14,taxrev,.false.)
-      call csv_write(14,bpaid,.false.)
-      call csv_write(14,a,.true.)
+    if (gen_output) then
+      if (ind_p.ge.(periods-printed)) then
+        call csv_write(14,real(ind_ag),.false.)
+        call csv_write(14,real(ind_p),.false.)
+        call csv_write(14,real(LMstatus(male,ind_ag)),.false.)
+        call csv_write(14,real(new_LMstatus(male,ind_ag)),.false.)
+        call csv_write(14,real(LMstatus(female,ind_ag)),.false.)
+        call csv_write(14,real(new_LMstatus(female,ind_ag)),.false.)
+        call csv_write(14,labincome,.false.)
+        call csv_write(14,taxrev,.false.)
+        call csv_write(14,bpaid,.false.)
+        call csv_write(14,a,.true.)
+      end if
     end if
   end do ! Agents
     ! Update variables
@@ -1209,7 +1221,9 @@ subroutine SimMarried()
   end do ! Periods
 
   ! Close csv file
-  close(14)
+  if (gen_output) then
+    close(14)
+  end if
 
   ! Compute averages
   tot_income = tot_income/real(reps)
