@@ -598,7 +598,7 @@ subroutine SimMarried(gen_output)
     call csv_write(14,"Benefits Entitlement Female Tomorrow",.false.)
     call csv_write(14,"Benefits Received",.false.)
     call csv_write(14,"Wealth",.false.)
-    call csv_write(14,"Value_VF",.true.)
+    call csv_write(14,"Value VF",.true.)
   end if
 
   do ind_p = 1, periods-1 ! CAREFUL with last period
