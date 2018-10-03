@@ -41,12 +41,29 @@ lab val married lab_married
 
 // Histagrams
 	// All
-	hist wealth, width(10)
+	hist wealth, width(50)
+	hist valuevf, width(5) //ysc(r(0 0.02)) ylabel(0(0.005)0.02)
 
 	// Married and single
-	twoway 	(hist wealth if married==1, width(10) color(green)) ///
-		(hist wealth if married==0, width(10) ///
+	twoway 	(hist wealth if married==1, width(50) color(green)) ///
+		(hist wealth if married==0, width(50) ///
 		fcolor(none) lcolor(black)), legend(order(1 "Married" 2 "Single" ))
+
+	twoway 	(hist valuevf if married==1, width(5) color(green)) ///
+		(hist valuevf if married==0, width(5) ///
+		fcolor(none) lcolor(black)), legend(order(1 "Married" 2 "Single" ))
+
+// Summary with details
+	// All
+	su wealth, d
+	su valuevf, d
+
+	// Married and single
+	forval m = 0/1 {
+		su wealth if married == `m', d
+		su valuevf if married == `m', d
+		}
+
 
 /*
 
