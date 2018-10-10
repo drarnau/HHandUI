@@ -5,10 +5,11 @@ program calibration
 
   integer, parameter :: maxIter = 100
   integer :: iter
-  real(8), parameter :: adj_KL = 0.1d0, adj_T = 0.5d0, adj_avgz = 0.5d0, &
+  real(8), parameter :: adj_KL = 0.1d0, adj_T = 0.2d0, adj_avgz = 0.2d0, &
                         tol_KL = 0.01 , tol_T = 0.01, tol_avgz = 0.01
                         ! tol_KL = 0.01 , tol_T = 1.0d-4, tol_avgz = 0.001
   real(8) :: start, finish, t_start, t_finish, error_KL, error_T, error_avgz
+  real(8) :: tempK, tempL
 
   call cpu_time(start)
 ! INITIALISATION: Read global parameters from outside world and initialise equilibrium variables
@@ -50,7 +51,10 @@ program calibration
 
   ! CHECK EQUILIBRIUM IS REACHED
     ! Compute aggregates
-    new_KLratio = aggregate3(aux_KLratio)
+    ! new_KLratio = aggregate3(aux_KLratio)
+    tempK = wealth(1)*weights(0,1) + wealth(2)*weights(0,2) + wealth(3)*(weights(1,1)+weights(1,2))
+    tempL = aux_tot_z(1)*weights(0,1) + aux_tot_z(2)*weights(0,2) + aux_tot_z(3)*(weights(1,1)+weights(1,2))
+    new_KLratio =  tempK/tempL
     new_T = aggregate3(aux_T)
     new_average_z = aggregate3(aux_average_z)
 
@@ -64,6 +68,7 @@ program calibration
 
     ! Print current situation
     print *, "Current equilibirum errors, at iteration:", iter
+    print*, " K and L : ", tempK, tempL
     print '(a,3f9.4)', "  KL ratio (old new error): ", KLratio, new_KLratio, error_KL
     print '(a,3f9.4)', "  T (old new error):        ", T, new_T, error_T
     print '(a,3f9.4)', "  Average z (old new error):", average_z, new_average_z, error_avgz
@@ -71,6 +76,7 @@ program calibration
 
     ! Update equilibrium values
     KLratio = adj_KL*new_KLratio + (1.d0-adj_KL)*KLratio
+    KLratio = min(KLratio, 0.99d0*(delta/theta)**(1/(theta-1)))
     T = adj_T*new_T + (1.d0-adj_T)*T
     average_z = adj_avgz*new_average_z + (1.d0-adj_avgz)*average_z
     call Prices(KLratio, int_rate, wage)

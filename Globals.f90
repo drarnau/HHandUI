@@ -22,6 +22,7 @@ module Globals
 
   ! Real vectors
   real(8), dimension(1:3) :: aux_KLratio, aux_average_z, aux_T, wealth
+  real(8), dimension(1:3) :: aux_tot_z
   real(8), dimension(1:26) :: aux_param
 
   ! Real matrices

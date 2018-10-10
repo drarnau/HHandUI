@@ -287,6 +287,7 @@ subroutine SimSingles(mysex, gen_output)
   transitions(single,mysex,1, :) = trans(1,:)/sum(trans(1,:))
   transitions(single,mysex,2, :) = trans(2,:)/sum(trans(2,:))
   transitions(single,mysex,3, :) = trans(3,:)/sum(trans(3,:))
+  aux_tot_z(mysex) = tot_z
 
   ! Print share of agents using top assets
   print '(a,I2,a,f7.4)', " Share of single", mysex, " HH using top assets:",&
@@ -1309,6 +1310,7 @@ subroutine SimMarried(gen_output)
     transitions(married,mysex,2, :) = itrans(mysex,2,:)/sum(itrans(mysex,2,:))
     transitions(married,mysex,3, :) = itrans(mysex,3,:)/sum(itrans(mysex,3,:))
   end do
+  aux_tot_z(male+female) = tot_z
 
   ! Print share of agents using top assets
   print '(a,f7.4)', " Share of married HH using top assets:", top_assets/(real(reps*agents))
