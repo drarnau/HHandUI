@@ -1,26 +1,26 @@
-0.99441   ! Discount factor
-0.51625   ! Utility cost of working, single male
+0.99499   ! Discount factor
+0.51630   ! Utility cost of working, single male
 0.00000   ! Consumption floor, single male
-0.03155   ! Standard deviation search cost, single male
-0.33200   ! Probability of finding a job for unemployed agents, single male
-0.17252   ! Probability of finding a job for OLF agents, single male
-0.01714   ! Probability of losing a job for employed agents, single male
+0.03912   ! Standard deviation search cost, single male
+0.29787   ! Probability of finding a job for unemployed agents, single male
+0.21250   ! Probability of finding a job for OLF agents, single male
+0.01710   ! Probability of losing a job for employed agents, single male
 0.48500   ! Utility cost of working, single female
 0.00000   ! Consumption floor, single female
-0.03456   ! Standard deviation search cost, single female
-0.28403   ! Probability of finding a job for unemployed agents, single female
+0.03460   ! Standard deviation search cost, single female
+0.25000   ! Probability of finding a job for unemployed agents, single female
 0.20220   ! Probability of finding a job for OLF agents, single female
 0.01180   ! Probability of losing a job for employed agents, single female
-0.17156   ! Utility cost of working married male
-0.36078   ! Utility cost of working married female
-0.00100   ! Utility cost of joint work
-1.40203   ! Consumption floor, married
+0.17160   ! Utility cost of working married male
+0.36080   ! Utility cost of working married female
+0.02603   ! Utility cost of joint work
+1.76350   ! Consumption floor, married
 1.70000   ! Adult-equivalent scale, married
-0.01274   ! Standard deviation search cost married male
-0.03036   ! Standard deviation search cost married female
-0.67919   ! Probability of finding a job for unemployed married male
-0.34182   ! Probability of finding a job for unemployed married female
-0.68375   ! Probability of finding a job for OLF married male
-0.31033   ! Probability of finding a job for OLF married female
-0.02271   ! Probability of losing a job for employed married male
+0.01270   ! Standard deviation search cost married male
+0.03040   ! Standard deviation search cost married female
+0.77295   ! Probability of finding a job for unemployed married male
+0.37305   ! Probability of finding a job for unemployed married female
+0.74630   ! Probability of finding a job for OLF married male
+0.33706   ! Probability of finding a job for OLF married female
+0.02270   ! Probability of losing a job for employed married male
 0.01780   ! Probability of losing a job for employed married female
