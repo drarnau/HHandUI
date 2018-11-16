@@ -97,7 +97,7 @@ subroutine Difference()
 
   ! Model Married-single wealth ratio
   marsing_ratio = (weights(married,male)+weights(married,female))*wealth(male+female) &
-                /((wealth(male)*weights(single,male)) +(wealth(female)*weights(single,female)))
+                /((wealth(male)*weights(single,male))+(wealth(female)*weights(single,female)))
 
   ! Compute distance between data and model
   mydiff = 0.d0

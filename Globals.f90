@@ -86,7 +86,7 @@ module GlobalsSingles
   implicit none
 
   ! Integer parameters
-  integer, parameter :: gp_a = 55, gp_z = 15, gp_gamma = 3
+  integer, parameter :: gp_a = 55, gp_z = 17, gp_gamma = 3
 
   ! Real parameters
   real(8), parameter :: min_a = 0, max_a = 1440.0
