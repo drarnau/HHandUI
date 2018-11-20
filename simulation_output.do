@@ -15,10 +15,13 @@ local dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/"
 // Working directory
 cd "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI/"
 
+// Auxiliary name
+local aux_name = "No_UI_"
+
 // Read csv files
 forval f = 1/3 {
 	preserve
-	import delimited simulation_`f'.csv, varnames(1) clear
+	import delimited `aux_name'simulation_`f'.csv, varnames(1) clear
 	gen HHtype = `f'
 	save temp, replace
 	restore
@@ -42,17 +45,36 @@ lab val married lab_married
 // Histagrams
 	// All
 	hist wealth, width(50)
+	graph export "`dir_output'`aux_name'wealth_total.png", replace
 	hist valuevf, width(5) //ysc(r(0 0.02)) ylabel(0(0.005)0.02)
+	graph export "`dir_output'`aux_name'valuevf_total.png", replace
 
 	// Married and single
 	twoway 	(hist wealth if married==1, width(50) color(green)) ///
 		(hist wealth if married==0, width(50) ///
 		fcolor(none) lcolor(black)), legend(order(1 "Married" 2 "Single" ))
+	graph export "`dir_output'`aux_name'wealth_bymaritalstatus.png", replace
+
 
 	twoway 	(hist valuevf if married==1, width(5) color(green)) ///
 		(hist valuevf if married==0, width(5) ///
 		fcolor(none) lcolor(black)), legend(order(1 "Married" 2 "Single" ))
+	graph export "`dir_output'`aux_name'valuevf_bymaritalstatus.png", replace
 
+// Added worker effect
+gen awe = 1 if statusfemaletoday == 3 & statusfemaletomorrow == 2
+replace awe = 1 if statusfemaletoday == 3 & statusfemaletomorrow == 1
+// replace awe = 0 if married == 1 & statusfemaletoday == 3 & awe == .
+replace awe = 0 if married == 1 & awe == .
+
+gen EU = 1 if statusmaletoday == 1 & statusmaletomorrow == 2
+// replace EU = 0 if married == 1 & statusmaletoday == 1 & EU == .
+replace EU = 0 if married == 1 & EU == .
+
+reg awe EU
+
+
+/*
 // Summary with details
 	// All
 	su wealth, d
@@ -63,9 +85,7 @@ lab val married lab_married
 		su wealth if married == `m', d
 		su valuevf if married == `m', d
 		}
-
-
-/*
+*/
 
 // Wealth distribution single vs. married
 forval m = 0/1 {
@@ -90,7 +110,7 @@ forval m = 0/1 {
 			}
 		}
 forvalues z=1/1 { // necessary not to have the commands in the tex file
-	qui log using "`dir_output'ratios_wealth.tex", text replace
+	qui log using "`dir_output'`aux_name'ratios_wealth.tex", text replace
 	set linesize 255
 	display "\begin{centering}"
 	display "\begin{tabular}{lrr}"
@@ -105,6 +125,42 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	display "\end{centering}"
 	qui log close
 	} // End loop z
+
+// Value VF distribution single vs. married
+	forval m = 0/1 {
+		su valuevf if married == `m'
+		local mean_`m' = `r(mean)'
+		local cv_`m' = `r(sd)'/`r(mean)'
+		fastgini wealth if married == `m'
+		local gini_`m' = r(gini)
+
+		foreach z in "mean_`m'" "cv_`m'" "gini_`m'" {
+			if ``z'' > 1 {
+				local `z' = substr("``z''",1,6)
+				}
+			else {
+				local `z' = substr("``z''",1,5)
+				local `z' = subinstr("``z''",".","0.",1)
+				}
+			}
+	} // m
+
+	forvalues z=1/1 { // necessary not to have the commands in the tex file
+		qui log using "`dir_output'`aux_name'descriptives_valuevf.tex", text replace
+		set linesize 255
+		display "\begin{centering}"
+		display "\begin{tabular}{lrr}"
+		display " & Single & Married\tabularnewline"
+		display "\hline"
+		display "\hline"
+		display "Average 			& `mean_0' 	& `mean_1' 	\tabularnewline"
+		display "Coefficient of Variation 	& `cv_0' 	& `cv_1' 	\tabularnewline"
+		display "Gini Index 			& `gini_0' 	& `gini_1' 	\tabularnewline"
+		display "\hline"
+		display "\end{tabular}"
+		display "\end{centering}"
+		qui log close
+		} // End loop z
 
 // Transitions by quintiles
 xtile quintile = wealth, nquantiles(5)
@@ -152,7 +208,7 @@ forval tw = 1/3 { // Tomorrow
 	}
 
 forvalues z=1/1 { // necessary not to have the commands in the tex file
-	qui log using "`dir_output'trans_quintiles.tex", text replace
+	qui log using "`dir_output'`aux_name'trans_quintiles.tex", text replace
 	set linesize 255
 	display "\begin{centering}"
 	display "\begin{tabular}{cccccccccccc}"
