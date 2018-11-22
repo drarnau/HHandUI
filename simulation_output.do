@@ -71,7 +71,8 @@ gen EU = 1 if statusmaletoday == 1 & statusmaletomorrow == 2
 // replace EU = 0 if married == 1 & statusmaletoday == 1 & EU == .
 replace EU = 0 if married == 1 & EU == .
 
-reg awe EU
+probit awe EU
+margins, dydx(EU) atmeans
 
 
 /*
