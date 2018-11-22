@@ -16,7 +16,7 @@ local dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/"
 cd "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI/"
 
 // Auxiliary name
-local aux_name = "No_UI_"
+local aux_name = "Benchmark_"
 
 // Read csv files
 forval f = 1/3 {
@@ -71,7 +71,8 @@ gen EU = 1 if statusmaletoday == 1 & statusmaletomorrow == 2
 // replace EU = 0 if married == 1 & statusmaletoday == 1 & EU == .
 replace EU = 0 if married == 1 & EU == .
 
-reg awe EU
+probit awe EU
+margins, dydx(EU) atmeans
 
 
 /*
