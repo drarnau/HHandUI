@@ -280,7 +280,8 @@ subroutine SimSingles(mysex, gen_output)
   wealth(mysex) = tot_assets
   aux_KLratio(mysex) = tot_assets/tot_z
   aux_average_z(mysex) = tot_z/employed
-  aux_T(mysex) = (tot_taxrev-tot_bpaid)/real(agents)
+  aux_labincome(mysex) = tot_labincome
+  aux_bpaid(mysex) = tot_bpaid
   Erate(single,mysex) = employed/real(agents)
   Urate(single,mysex) = unemployed/(employed+unemployed)
   Nrate(single,mysex) = OLF/real(agents)
@@ -1301,7 +1302,8 @@ subroutine SimMarried(gen_output)
   wealth(male+female) = tot_assets
   aux_KLratio(male+female) = tot_assets/tot_z
   aux_average_z(male+female) = tot_z/sum(employed)
-  aux_T(male+female) = (tot_taxrev-tot_bpaid)/real(agents)
+  aux_labincome(male+female) = tot_labincome
+  aux_bpaid(male+female) = tot_bpaid
   do mysex = 1, 2
     Erate(married,mysex) = employed(mysex)/real(agents)
     Urate(married,mysex) = unemployed(mysex)/(employed(mysex)+unemployed(mysex))

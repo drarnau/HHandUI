@@ -9,19 +9,19 @@ module Globals
 
   ! Assigned parameters
   real(8), parameter :: mu = 1.d0/6.d0          ! Average duration UI
-  real(8), parameter :: b_0 = 0.23              ! Default replacement ratio
-  real(8), parameter :: b_bar = 0.465           ! Benefits cap
+  real(8), parameter :: b_0 = 0.0               ! Default replacement ratio 0.23
+  real(8), parameter :: b_bar = 0.0             ! Benefits cap 0.465
   real(8), parameter :: theta = 0.3             ! Capital share of output in production function
   real(8), parameter :: delta = 0.0067          ! Capital depreciation
-  real(8), parameter :: tau = 0.3               ! Proportional tax on labor income
+  real(8), parameter :: T = 1.75                ! Household lump-sum transfer
   real(8), parameter :: rho_z = 0.99617         ! Persistence productivity process
   real(8), parameter :: sigma_epsilon = 0.09565 ! Standard deviation productivity process
 
   ! Real variables
-  real(8) :: beta, int_rate, wage, KLratio, average_z, T, new_KLratio, new_average_z, new_T
+  real(8) :: beta, int_rate, wage, KLratio, average_z, tau, new_KLratio, new_average_z, new_tau
 
   ! Real vectors
-  real(8), dimension(1:3) :: aux_KLratio, aux_average_z, aux_T, wealth
+  real(8), dimension(1:3) :: aux_KLratio, aux_average_z, aux_labincome, aux_bpaid, wealth
   real(8), dimension(1:3) :: aux_tot_z
   real(8), dimension(1:26) :: aux_param
 
