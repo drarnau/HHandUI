@@ -16,13 +16,14 @@ local dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/"
 cd "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI/"
 
 // Auxiliary name
-local aux_name = "No_UI_"
+local aux_name = ""
 
 // Read csv files
 forval f = 1/3 {
 	preserve
 	import delimited `aux_name'simulation_`f'.csv, varnames(1) clear
 	gen HHtype = `f'
+	replace id = `f'*100000000 + id
 	save temp, replace
 	restore
 	append using temp
@@ -41,6 +42,9 @@ replace married = 0 if married == .
 label var married "Married Dummy"
 label define lab_married 0 "Single" 1 "Married"
 lab val married lab_married
+
+// Set panel structure
+tsset id period
 
 // Histagrams
 	// All
@@ -118,9 +122,9 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	display " & Data & Model\tabularnewline"
 	display "\hline"
 	display "\hline"
-	display "Average 			& 2.8481 	& `rmean' 	\tabularnewline"
-	display "Coefficient of Variation 	& 0.7575 	& `rcv' 	\tabularnewline"
-	display "Gini Index 			& 0.9512 	& `rgini' 	\tabularnewline"
+	display "Average 										& 2.8481 	& `rmean' 	\tabularnewline"
+	display "Coefficient of Variation 	& 0.7575 	& `rcv' 		\tabularnewline"
+	display "Gini Index 								& 0.9512 	& `rgini' 	\tabularnewline"
 	display "\hline"
 	display "\end{tabular}"
 	display "\end{centering}"
@@ -154,9 +158,9 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 		display " & Single & Married\tabularnewline"
 		display "\hline"
 		display "\hline"
-		display "Average 			& `mean_0' 	& `mean_1' 	\tabularnewline"
-		display "Coefficient of Variation 	& `cv_0' 	& `cv_1' 	\tabularnewline"
-		display "Gini Index 			& `gini_0' 	& `gini_1' 	\tabularnewline"
+		display "Average 										& `mean_0' 	& `mean_1' 	\tabularnewline"
+		display "Coefficient of Variation 	& `cv_0' 		& `cv_1' 		\tabularnewline"
+		display "Gini Index 								& `gini_0' 	& `gini_1' 	\tabularnewline"
 		display "\hline"
 		display "\end{tabular}"
 		display "\end{centering}"
@@ -227,6 +231,59 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	display "NE & 1.05 & 1.34 & 0.99 & 0.89 & 0.84 & NE & `t31_q1' & `t31_q2' & `t31_q3' & `t31_q4' & `t31_q5' \tabularnewline"
 	display "NU & 1.79 & 1.37 & 0.86 & 0.63 & 0.47 & NU & `t32_q1' & `t32_q2' & `t32_q3' & `t32_q4' & `t32_q5' \tabularnewline"
 	display "NN & 0.97 & 0.96 & 1.01 & 1.02 & 1.03 & NN & `t33_q1' & `t33_q2' & `t33_q3' & `t33_q4' & `t33_q5' \tabularnewline"
+	display "\hline"
+	display "\end{tabular}"
+	display "\end{centering}"
+	qui log close
+	} // End loop z
+
+// UI duration and efficency
+// Count singles getting benefits
+gen benefitssingle = 1 if married == 0 & benefitsentitlementtoday == 1 & benefitsreceived > 0
+replace benefitssingle = 0 if married == 0 & benefitssingle == . & statustoday == 2
+
+// Count married getting benefits
+foreach g in male female {
+  replace benefits`g' = . if status`g'today != 2
+	}
+
+// Compute efficency
+foreach g in single male female {
+	su benefits`g'
+  local eff_`g' = `r(mean)' *100
+	}
+
+// Compute duration
+foreach g in single male female {
+	replace benefits`g' = . if benefits`g' != 1
+	tsspell, cond(L.benefits`g' == 1)
+	gen aux = _seq if _end == 1
+	su aux
+	local dur_`g' = `r(mean)'
+	drop _* aux
+	}
+
+foreach z in "eff" "dur" {
+	local `z' = (0.5*``z'_single') + (0.25*``z'_male') + (0.25*``z'_female')
+	if ``z'' > 1 {
+		local `z' = substr("``z''",1,6)
+		}
+	else {
+		local `z' = substr("``z''",1,5)
+		local `z' = subinstr("``z''",".","0.",1)
+		}
+	}
+
+forvalues z=1/1 { // necessary not to have the commands in the tex file
+	qui log using "`dir_output'`aux_name'performance_UI.tex", text replace
+	set linesize 255
+	display "\begin{centering}"
+	display "\begin{tabular}{lrr}"
+	display " & Data & Model\tabularnewline"
+	display "\hline"
+	display "\hline"
+	display "Duration of unemployment benefits (months) 		&  3.82 & `dur' \tabularnewline"
+	display "Share of unemployed workers covered by UI (\%) 	& 39.16 & `eff' 	\tabularnewline"
 	display "\hline"
 	display "\end{tabular}"
 	display "\end{centering}"
