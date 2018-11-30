@@ -28,6 +28,12 @@ subroutine initialisation()
   end do
   close(1)
 
+  open(unit = 2, file = "UI.txt")
+  read(2,*) b_0
+  read(2,*) b_bar
+  read(2,*) mu
+  close(2)
+
   ! Check weights add up to 1
   if (abs(sum(weights)-1.d0).gt.tiny) then
     print *, "ERROR: Weights in assigned.txt o NOT add up to 1"
