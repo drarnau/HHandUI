@@ -2,7 +2,7 @@ subroutine Difference()
   use Globals
   implicit none
 
-  integer :: myms, mysex
+  integer :: myms, mysex, today, tomorrow
   real(8) :: dint_rate, dmarsing_ratio, mydiff, marsing_ratio
   real(8), dimension(0:1,1:2) :: dErate, dUrate
   real(8), dimension(0:1,1:2,1:3,1:3) :: dtrans
@@ -149,9 +149,22 @@ subroutine Difference()
     end do
     end do
 
-    ! open(unit = 11, file = "distance.txt")
-    !   write(11,*) mydiff
-    ! close(11)
+    open(unit = 11, file = "aggvars.txt")
+      write(11,*) int_rate
+      write(11,*) marsing_ratio
+      write(11,*) KLratio
+      write(11,*) tau
+      write(11,*) average_z
+      do myms = 0, 1
+      do mysex = 1, 2
+      do today = 1, 3
+      do tomorrow = 1, 3
+        write(11,*) transitions(myms,mysex,today,tomorrow)
+      end do
+      end do
+      end do
+      end do
+    close(11)
 
 CONTAINS
   real(8) function fdiff(data,model)
