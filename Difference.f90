@@ -149,9 +149,9 @@ subroutine Difference()
     end do
     end do
 
-    open(unit = 11, file = "distance.txt")
-      write(11,*) mydiff
-    close(11)
+    ! open(unit = 11, file = "distance.txt")
+    !   write(11,*) mydiff
+    ! close(11)
 
 CONTAINS
   real(8) function fdiff(data,model)
