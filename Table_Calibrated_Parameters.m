@@ -1,4 +1,4 @@
- % Creates a Latex Table with calibrated parameters
+% Creates a Latex Table with calibrated parameters
 clc;
 clear all;
 
