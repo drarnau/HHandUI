@@ -68,11 +68,11 @@ subroutine Difference()
   do mysex = 1, 2
     do td = 1, 3
     do tw = 1, 3
-      write (12, *) dtrans(myms,mysex,td,tw)
+      write (12, *) transitions(myms,mysex,td,tw)
     end do
     end do
-    write(12,*) dErate(myms,mysex)
-    write(12,*) dUrate(myms,mysex)
+    write(12,*) Erate(myms,mysex)
+    write(12,*) Urate(myms,mysex)
   end do
   end do
   close(12)
