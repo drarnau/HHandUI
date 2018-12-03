@@ -33,4 +33,5 @@
 
 # Code output
 distance.txt
+model.txt
 *.csv

@@ -38,7 +38,7 @@ subroutine Difference()
   marsing_ratio = (weights(married,male)+weights(married,female))*wealth(male+female) &
                 /((wealth(male)*weights(single,male))+(wealth(female)*weights(single,female)))
 
-  ! PRINT RESULTS
+  ! Print results to screen
     print *, "*************************************************************************"
     print '(a,f10.7,a,f10.7)', " Interest rate (Data vs. Model):", dint_rate, "    ", int_rate
     print '(a,f10.7,a,f10.7)', " Married-single wealth ratio (Data vs. Model):", &
@@ -61,4 +61,20 @@ subroutine Difference()
       print *, ""
     end do
     end do
+
+  ! Print results to txt file
+  open(unit = 12, file = "model.txt")
+  do myms = 0, 1
+  do mysex = 1, 2
+    do td = 1, 3
+    do tw = 1, 3
+      write (12, *) dtrans(myms,mysex,td,tw)
+    end do
+    end do
+    write(12,*) dErate(myms,mysex)
+    write(12,*) dUrate(myms,mysex)
+  end do
+  end do
+  close(12)
+
 end subroutine Difference
