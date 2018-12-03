@@ -46,6 +46,7 @@ lab val married lab_married
 // Set panel structure
 tsset id period
 
+/*
 // Histagrams
 	// All
 	hist wealth, width(50)
@@ -78,8 +79,6 @@ replace EU = 0 if married == 1 & EU == .
 probit awe EU
 margins, dydx(EU) atmeans
 
-
-/*
 // Summary with details
 	// All
 	su wealth, d
@@ -115,7 +114,7 @@ forval m = 0/1 {
 			}
 		}
 forvalues z=1/1 { // necessary not to have the commands in the tex file
-	qui log using "`dir_output'`aux_name'ratios_wealth.tex", text replace
+	qui log using "`dir_output'`aux_name'table_ratios_wealth.tex", text replace
 	set linesize 255
 	display "\begin{centering}"
 	display "\begin{tabular}{lrr}"
@@ -127,7 +126,7 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	display "Gini Index 								& 0.9512 	& `rgini' 	\tabularnewline"
 	display "\hline"
 	display "\end{tabular}"
-	display "\end{centering}"
+	display "\par \end{centering}"
 	qui log close
 	} // End loop z
 
@@ -151,7 +150,7 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	} // m
 
 	forvalues z=1/1 { // necessary not to have the commands in the tex file
-		qui log using "`dir_output'`aux_name'descriptives_valuevf.tex", text replace
+		qui log using "`dir_output'`aux_name'table_descriptives_valuevf.tex", text replace
 		set linesize 255
 		display "\begin{centering}"
 		display "\begin{tabular}{lrr}"
@@ -163,7 +162,7 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 		display "Gini Index 								& `gini_0' 	& `gini_1' 	\tabularnewline"
 		display "\hline"
 		display "\end{tabular}"
-		display "\end{centering}"
+		display "\par \end{centering}"
 		qui log close
 		} // End loop z
 
@@ -213,7 +212,7 @@ forval tw = 1/3 { // Tomorrow
 	}
 
 forvalues z=1/1 { // necessary not to have the commands in the tex file
-	qui log using "`dir_output'`aux_name'trans_quintiles.tex", text replace
+	qui log using "`dir_output'`aux_name'table_trans_quintiles.tex", text replace
 	set linesize 255
 	display "\begin{centering}"
 	display "\begin{tabular}{cccccccccccc}"
@@ -233,7 +232,7 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	display "NN & 0.97 & 0.96 & 1.01 & 1.02 & 1.03 & NN & `t33_q1' & `t33_q2' & `t33_q3' & `t33_q4' & `t33_q5' \tabularnewline"
 	display "\hline"
 	display "\end{tabular}"
-	display "\end{centering}"
+	display "\par \end{centering}"
 	qui log close
 	} // End loop z
 
@@ -275,7 +274,7 @@ foreach z in "eff" "dur" {
 	}
 
 forvalues z=1/1 { // necessary not to have the commands in the tex file
-	qui log using "`dir_output'`aux_name'performance_UI.tex", text replace
+	qui log using "`dir_output'`aux_name'table_performance_UI.tex", text replace
 	set linesize 255
 	display "\begin{centering}"
 	display "\begin{tabular}{lrr}"
@@ -286,6 +285,6 @@ forvalues z=1/1 { // necessary not to have the commands in the tex file
 	display "Share of unemployed workers covered by UI (\%) 	& 39.16 & `eff' 	\tabularnewline"
 	display "\hline"
 	display "\end{tabular}"
-	display "\end{centering}"
+	display "\par \end{centering}"
 	qui log close
 	} // End loop z
