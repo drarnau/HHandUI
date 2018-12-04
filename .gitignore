@@ -36,3 +36,4 @@ model.txt
 distance.txt
 aggvars.txt
 *.csv
+/experiment*/
