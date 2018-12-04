@@ -32,6 +32,7 @@
 *.app
 
 # Code output
+model.txt
 distance.txt
 aggvars.txt
 *.csv
