@@ -349,7 +349,7 @@ subroutine SimMarried(gen_output)
 
   logical, intent(in) :: gen_output
   integer, parameter :: sim_gp_a = 1000
-  integer :: ind_ag, ind_p, ind_z, ind_g, ind_b, ind_g_f, ind_b_f, reps, mysex
+  integer :: ind_ag, ind_p, ind_z, ind_g, ind_b, ind_g_f, ind_b_f, reps, mysex, bmale, bfemale
   integer, dimension(agents) :: assets, new_assets
   integer, dimension(1:2,agents) :: LMstatus, new_LMstatus, entitled, new_entitled
   integer, dimension(agents,periods) :: myshock_z
@@ -599,6 +599,8 @@ subroutine SimMarried(gen_output)
     call csv_write(14,"Benefits Entitlement Female Today",.false.)
     call csv_write(14,"Benefits Entitlement Female Tomorrow",.false.)
     call csv_write(14,"Benefits Received",.false.)
+    call csv_write(14,"Benefits Male",.false.)
+    call csv_write(14,"Benefits Female",.false.)
     call csv_write(14,"Wealth",.false.)
     call csv_write(14,"Value VF",.true.)
   end if
@@ -610,6 +612,8 @@ subroutine SimMarried(gen_output)
     labincome = 0.d0
     taxrev = 0.d0
     bpaid = 0.d0
+    bmale = 0
+    bfemale = 0
 
     ! Assign shocks
     allocate(aux_vec(gp_gamma))
@@ -731,6 +735,7 @@ subroutine SimMarried(gen_output)
     elseif ((LMstatus(male,ind_ag).eq.1).and.(LMstatus(female,ind_ag).eq.2)) then
       ! Benefits - check female
       bpaid = real(entitled(female,ind_ag))*(benefits(z(female)))
+      bfemale = entitled(female,ind_ag)
       if ((entitled(female,ind_ag).eq.1).and.(shock_mu(female,ind_ag,ind_p).gt.mu)) then
         ! Agent is entitled and does NOT get hit by a mu shock
         new_entitled(female,ind_ag) = 1
@@ -860,6 +865,7 @@ subroutine SimMarried(gen_output)
     elseif ((LMstatus(male,ind_ag).eq.2).and.(LMstatus(female,ind_ag).eq.1)) then
       ! Benefits - check male
       bpaid = real(entitled(male,ind_ag))*(benefits(z(male)))
+      bmale = entitled(male,ind_ag)
       if ((entitled(male,ind_ag).eq.1).and.(shock_mu(male,ind_ag,ind_p).gt.mu)) then
         ! Agent is entitled and does NOT get hit by a mu shock
         new_entitled(male,ind_ag) = 1
@@ -929,6 +935,8 @@ subroutine SimMarried(gen_output)
       ! Benefits - check both
       bpaid = (real(entitled(male,ind_ag))*(benefits(z(male)))) + &
               (real(entitled(female,ind_ag))*(benefits(z(female))))
+      bmale = entitled(male,ind_ag)
+      bfemale = entitled(female,ind_ag)
       do mysex = 1, 2
         if ((entitled(mysex,ind_ag).eq.1).and.(shock_mu(mysex,ind_ag,ind_p).gt.mu)) then
           ! Agent is entitled and does NOT get hit by a mu shock
@@ -982,6 +990,7 @@ subroutine SimMarried(gen_output)
       ! Benefits - None for female, check male
       new_entitled(female,ind_ag) = 0
       bpaid = real(entitled(male,ind_ag))*(benefits(z(male)))
+      bmale = entitled(male,ind_ag)
       if ((entitled(male,ind_ag).eq.1).and.(shock_mu(male,ind_ag,ind_p).gt.mu)) then
         ! Agent is entitled and does NOT get hit by a mu shock
         new_entitled(male,ind_ag) = 1
@@ -1093,6 +1102,7 @@ subroutine SimMarried(gen_output)
       ! Benefits - None for male, check female
       new_entitled(male,ind_ag) = 0
       bpaid = real(entitled(female,ind_ag))*(benefits(z(female)))
+      bfemale = entitled(female,ind_ag)
       if ((entitled(female,ind_ag).eq.1).and.(shock_mu(female,ind_ag,ind_p).gt.mu)) then
         ! Agent is entitled and does NOT get hit by a mu shock
         new_entitled(female,ind_ag) = 1
@@ -1233,6 +1243,8 @@ subroutine SimMarried(gen_output)
         call csv_write(14,real(entitled(female,ind_ag)),.false.)
         call csv_write(14,real(new_entitled(female,ind_ag)),.false.)
         call csv_write(14,bpaid,.false.)
+        call csv_write(14,bmale,.false.)
+        call csv_write(14,bfemale,.false.)
         call csv_write(14,a,.false.)
         ! Compute value of value function for current household
         if ((LMstatus(male,ind_ag).eq.1).and.(LMstatus(female,ind_ag).eq.1)) then
