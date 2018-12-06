@@ -66,8 +66,8 @@ forval e = 1/9 {
 
 	forval e = 1/9 {
 		forval t = 1/3 {
-			local vf_e`e'_HH`t' = (${vf_e`e'_HH`t'} - ${vf_e3_HH`t'})*100/${vf_e3_HH`t'}
-				if `vf_e`e'_HH`t'' > 1 {
+			local vf_e`e'_HH`t' = ((${vf_e`e'_HH`t'} - ${vf_e3_HH`t'})/${vf_e3_HH`t'})*100
+				if abs(`vf_e`e'_HH`t'') > 1 {
 					local vf_e`e'_HH`t' = substr("`vf_e`e'_HH`t''",1,6)
 					}
 				else {
