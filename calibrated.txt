@@ -14,13 +14,13 @@
 0.17160   ! Utility cost of working married male
 0.36080   ! Utility cost of working married female
 0.02603   ! Utility cost of joint work
-1.70100   ! Consumption floor, married
+1.73225   ! Consumption floor, married
 1.70000   ! Adult-equivalent scale, married
-0.01270   ! Standard deviation search cost married male
+0.01421   ! Standard deviation search cost married male
 0.03040   ! Standard deviation search cost married female
 0.78858   ! Probability of finding a job for unemployed married male
 0.40430   ! Probability of finding a job for unemployed married female
-0.68380   ! Probability of finding a job for OLF married male
+0.74630   ! Probability of finding a job for OLF married male
 0.35269   ! Probability of finding a job for OLF married female
 0.02270   ! Probability of losing a job for employed married male
 0.01780   ! Probability of losing a job for employed married female
