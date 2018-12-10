@@ -15,12 +15,14 @@ global dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/"
 // Working directory
 global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI/"
 
-// Specify variable and experiment
+// Specify variable and experiment details
 global myvar = "valuevf"
 global myexp = "benchmark"
+global nexp = 9 // Number of experiments
+global nbm = 3 // Number of benchmark experiment
 
 // Iterate over experiments
-forval e = 1/8 {
+forval e = 1/$nexp {
 	local dir_aux = "$dir_work" + "experiment" + "`e'" + "/"
 
 	cd `dir_aux'
@@ -69,20 +71,21 @@ forval e = 1/8 {
 
 // Print results in a table
 	// Normalise to benchmark and give right format
-
-	forval e = 1/9 {
+	forval e = 1/$nexp {
+		foreach v in "mean" "p10" "p25" "p50" "p75" "p90" {
 		forval t = 1/3 {
-			local vf_e`e'_HH`t' = ((${vf_e`e'_HH`t'} - ${vf_e3_HH`t'})/${vf_e3_HH`t'})*100
-				if abs(`vf_e`e'_HH`t'') > 1 {
-					local vf_e`e'_HH`t' = substr("`vf_e`e'_HH`t''",1,6)
+			local nbm = $nbm
+			local `v'_e`e'_HH`t' = ((${`v'_e`e'_HH`t'} - ${`v'_e`nbm'_HH`t'})/${`v'_e`nbm'_HH`t'})*100
+				if abs(``v'_e`e'_HH`t'') > 1 {
+				local `v'_e`e'_HH`t' = substr("``v'_e`e'_HH`t''",1,6)
 					}
 				else {
-					local vf_e`e'_HH`t' = substr("`vf_e`e'_HH`t''",1,5)
-					local vf_e`e'_HH`t' = subinstr("`vf_e`e'_HH`t''",".","0.",1)
+					local `v'_e`e'_HH`t' = substr("``v'_e`e'_HH`t''",1,5)
+					local `v'_e`e'_HH`t' = subinstr("``v'_e`e'_HH`t''",".","0.",1)
 					}
-		}
-		foreach z in "b_0_e`e'" "b_bar_e`e'" "mu_e`e'" {
-			// di "`z'"
+				}
+				}
+		foreach z in "b_0_e`e'" "b_bar_e`e'" "mu_e`e'" "r_e`e'" "tau_e`e'" "KLratio_e`e'" "average_z_e`e'" {
 			if ${`z'} > 1 {
 				local `z' = substr("$`z'",1,4)
 				}
@@ -90,23 +93,24 @@ forval e = 1/8 {
 				local `z' = substr("$`z'",1,3)
 				local `z' = subinstr("``z''",".","0.",1)
 				}
+			}
 		}
-	}
-
+foreach v in "mean" "p10" "p25" "p50" "p75" "p90" {
 forvalues z=1/1 { // necessary not to have the commands in the tex file
-	cd $dir_output
-	qui log using "table_UI_experiments.tex", text replace
+	local file_aux = "$dir_output" + "$myexp" + "_" + "$myvar" + "_" + "`v'" + ".tex"
+	qui log using `file_aux', text replace
 	set linesize 255
-	display "\begin{centering}"
-	display "\begin{tabular}{cccrrr}"
-	display "$""b_0$ & $\bar{b}$ & $\mu$ & Single Males & Single Females & Married \tabularnewline"
-	display "\hline"
-	display "\hline"
-	forval e = 1/9 {
-		di "`b_0_e`e'' & `b_bar_e`e'' & `mu_e`e'' & `vf_e`e'_HH1' & `vf_e`e'_HH2' & `vf_e`e'_HH3' \tabularnewline"
+	di "\begin{centering}"
+	di "\begin{tabular}{cccccrrr}"
+	di "$""b_0$ & $\bar{b}$ & $\mu$ & Tax ($\tau$) & Interest rate & Single Males & Single Females & Married \tabularnewline"
+	di "\hline"
+	di "\hline"
+	forval e = 1/$nexp {
+		di "`b_0_e`e'' & `b_bar_e`e'' & `mu_e`e'' & `tau_e`e'' & `r_e`e'' & ``v'_e`e'_HH1' & ``v'_e`e'_HH2' & ``v'_e`e'_HH3' \tabularnewline"
 		}
-	display "\hline"
-	display "\end{tabular}"
-	display "\par \end{centering}"
+	di "\hline"
+	di "\end{tabular}"
+	di "\par \end{centering}"
 	qui log close
 	} // End loop z
+	}
