@@ -35,4 +35,6 @@
 /experiment*
 distance.txt
 model.txt
+aggvars.txt
+output.dta
 *.csv
