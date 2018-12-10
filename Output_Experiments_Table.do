@@ -15,8 +15,12 @@ global dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/"
 // Working directory
 global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI/"
 
-// Auxiliary name
-forval e = 1/9 {
+// Specify variable and experiment
+global myvar = "valuevf"
+global myexp = "benchmark"
+
+// Iterate over experiments
+forval e = 1/8 {
 	local dir_aux = "$dir_work" + "experiment" + "`e'" + "/"
 
 	cd `dir_aux'
@@ -38,17 +42,12 @@ forval e = 1/9 {
 	label define lab_hhtype  1 "Single Men" 2 "Single Women" 3 "Married Household"
 	lab val HHtype lab_hhtype
 
-	// Married dummy
-	gen married = 1 if HHtype == 3
-	replace married = 0 if married == .
-	label var married "Married Dummy"
-	label define lab_married 0 "Single" 1 "Married"
-	lab val married lab_married
-
 	forval t = 1/3 {
-		su valuevf if HHtype == `t'
-		global vf_e`e'_HH`t' = `r(mean)'
-	}
+		su $myvar if HHtype == `t', d
+		foreach v in "mean" "p10" "p25" "p50" "p75" "p90" {
+			global `v'_e`e'_HH`t' = `r(`v')'
+			}
+		}
 	clear
 
 	// Load experiment info
@@ -57,7 +56,14 @@ forval e = 1/9 {
 	global b_0_e`e' = v1[1]
 	global b_bar_e`e' = v1[2]
 	global mu_e`e' = v1[3]
+	clear
 
+	// Load aggregate variables
+	import delim using aggvars.txt
+	global r_e`e' = v1[1]
+	global tau_e`e' = v1[2]
+	global KLratio_e`e' = v1[3]
+	global average_z_e`e' = v1[4]
 	clear
 }
 
