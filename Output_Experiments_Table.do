@@ -18,8 +18,8 @@ global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/
 // Specify variable and experiment details
 global myvar = "valuevf"
 global myexp = "benchmark"
-global nexp = 9 // Number of experiments
-global nbm = 3 // Number of benchmark experiment
+global nexp = 8 // Number of experiments
+global nbm = 1 // Number of benchmark experiment
 
 // Iterate over experiments
 forval e = 1/$nexp {
@@ -62,8 +62,8 @@ forval e = 1/$nexp {
 
 	// Load aggregate variables
 	import delim using aggvars.txt
-	global r_e`e' = v1[1]
-	global tau_e`e' = v1[2]
+	global r_e`e' = v1[1] * 100
+	global tau_e`e' = v1[2] * 100
 	global KLratio_e`e' = v1[3]
 	global average_z_e`e' = v1[4]
 	clear
@@ -85,12 +85,21 @@ forval e = 1/$nexp {
 					}
 				}
 				}
-		foreach z in "b_0_e`e'" "b_bar_e`e'" "mu_e`e'" "r_e`e'" "tau_e`e'" "KLratio_e`e'" "average_z_e`e'" {
+		foreach z in "b_0_e`e'" "b_bar_e`e'" "mu_e`e'" {
 			if ${`z'} > 1 {
 				local `z' = substr("$`z'",1,4)
 				}
 			else {
 				local `z' = substr("$`z'",1,3)
+				local `z' = subinstr("``z''",".","0.",1)
+				}
+			}
+		foreach z in "r_e`e'" "tau_e`e'" "KLratio_e`e'" "average_z_e`e'" {
+			if ${`z'} > 1 {
+				local `z' = substr("$`z'",1,6)
+				}
+			else {
+				local `z' = substr("$`z'",1,5)
 				local `z' = subinstr("``z''",".","0.",1)
 				}
 			}
