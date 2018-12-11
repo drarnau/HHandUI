@@ -38,7 +38,7 @@ fprintf(fid, '$E$  & %s & %s & %s & $E$  & %s & %s & %s \\tabularnewline \n', Ln
 fprintf(fid, '$U$  & %s & %s & %s & $U$  & %s & %s & %s \\tabularnewline \n', Lnum(d_trans(2,1,t_ag)), Lnum(d_trans(2,2,t_ag)), Lnum(d_trans(2,3,t_ag)), Lnum(trans(2,1,t_ag)), Lnum(trans(2,2,t_ag)), Lnum(trans(2,3,t_ag)));
 fprintf(fid, '$N$  & %s & %s & %s & $N$  & %s & %s & %s \\tabularnewline \n', Lnum(d_trans(3,1,t_ag)), Lnum(d_trans(3,2,t_ag)), Lnum(d_trans(3,3,t_ag)), Lnum(trans(3,1,t_ag)), Lnum(trans(3,2,t_ag)), Lnum(trans(3,3,t_ag)));
 fprintf(fid, '\\multicolumn{7}{c|}{} & \\multicolumn{7}{c}{} \\tabularnewline \n');
-fprintf(fid, '\\multicolumn{5}{l}{Employment Rate} & %s & \\multicolumn{5}{l}{Employment Rate} & %s \\tabularnewline \n', Lnum(d_stocks(1,t_ag)), Lnum(stocks(1,t_ag)));
+% fprintf(fid, '\\multicolumn{5}{l}{Employment Rate} & %s & \\multicolumn{5}{l}{Employment Rate} & %s \\tabularnewline \n', Lnum(d_stocks(1,t_ag)), Lnum(stocks(1,t_ag)));
 fprintf(fid, '\\multicolumn{5}{l}{Unemployment Rate} & %s & \\multicolumn{5}{l}{Unemployment Rate} & %s \\tabularnewline \n', Lnum(d_stocks(2,t_ag)), Lnum(stocks(2,t_ag)));
 fprintf(fid, '\\hline \n');
 fprintf(fid, '\\multicolumn{14}{c}{} \\tabularnewline \n');
