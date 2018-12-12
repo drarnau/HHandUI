@@ -18,8 +18,8 @@ global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/
 // Specify variable and experiment details
 global myvar = "valuevf"
 global myexp = "benchmark"
-global nexp = 8 // Number of experiments
-global nbm = 1 // Number of benchmark experiment
+global nexp = 16 // Number of experiments
+global nbm = 14 // Number of benchmark experiment
 
 // Iterate over experiments
 forval e = 1/$nexp {

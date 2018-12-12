@@ -18,6 +18,8 @@ global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/
 // Specify variable and experiment
 global myvar = "valuevf"
 global myexp = "benchmark"
+global nexp = 16 // Number of experiments
+global nbm = 14 // Number of benchmark experiment
 
 // Create empty data set where to store results for all experiments
 // Each observation is one experiment
@@ -36,7 +38,7 @@ save output, replace
 clear
 
 // Iterate over experiments
-forval e = 1/8 {
+forval e = 1/$nexp {
 	local dir_aux = "$dir_work" + "experiment" + "`e'" + "/"
 
 	cd `dir_aux'
@@ -107,9 +109,10 @@ cd $dir_work
 use output.dta
 
 // Normalise all variables with as percentage change with respect to benchmark
+sort b_0
 forval t = 1/3 {
 	foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
-		local bm = `v'_HH`t'[6]
+		local bm = `v'_HH`t'[$nbm]
 		replace `v'_HH`t' = ((`v'_HH`t' - `bm')/`bm')*100
 		}
 	}
