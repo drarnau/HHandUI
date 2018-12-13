@@ -49,6 +49,8 @@ forval e = 1/$nexp {
 		foreach v in "mean" "p10" "p25" "p50" "p75" "p90" {
 			global `v'_e`e'_HH`t' = `r(`v')'
 			}
+		fastgini $myvar if HHtype == `t'
+		global gini_e`e'_HH`t' = `r(gini)'
 		}
 	clear
 
@@ -72,7 +74,7 @@ forval e = 1/$nexp {
 // Print results in a table
 	// Normalise to benchmark and give right format
 	forval e = 1/$nexp {
-		foreach v in "mean" "p10" "p25" "p50" "p75" "p90" {
+		foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
 		forval t = 1/3 {
 			local nbm = $nbm
 			local `v'_e`e'_HH`t' = ((${`v'_e`e'_HH`t'} - ${`v'_e`nbm'_HH`t'})/${`v'_e`nbm'_HH`t'})*100
@@ -104,7 +106,7 @@ forval e = 1/$nexp {
 				}
 			}
 		}
-foreach v in "mean" "p10" "p25" "p50" "p75" "p90" {
+foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
 forvalues z=1/1 { // necessary not to have the commands in the tex file
 	local file_aux = "$dir_output" + "$myexp" + "_" + "$myvar" + "_" + "`v'" + ".tex"
 	qui log using `file_aux', text replace

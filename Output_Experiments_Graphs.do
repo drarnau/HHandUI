@@ -84,11 +84,14 @@ forval e = 1/$nexp {
 	}
 
 	// Compute gini VF
-	// TBC
+	forval t = 1/3 {
+		fastgini $myvar if HHtype == `t'
+		gen gini_HH`t' = `r(gini)'
+		}
 
 	// Keep just one observation and relevant variables
 	keep if _n == 1
-	keep mean* p*
+	keep mean* p* gini*
 	drop period
 
 	// Add variables read in txt files
@@ -135,7 +138,7 @@ label var r "Interest rate"
 // Plot all variables
 set scheme plotplainblind
 
-foreach v in "mean" "p10" "p25" "p50" "p75" "p90" {
+foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
 	local file_aux = "$dir_output" + "$myexp" + "_" + "$myvar" + "_" + "`v'" + ".png"
 	forval t = 1/3{
 		qui su `v'_HH`t'
