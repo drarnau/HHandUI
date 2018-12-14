@@ -23,7 +23,7 @@ global nbm = 14 // Number of benchmark experiment
 
 // Iterate over experiments
 forval e = 1/$nexp {
-	local dir_aux = "$dir_work" + "experiment" + "`e'" + "/"
+	local dir_aux = "$dir_work" + "$myexp" + "`e'" + "/"
 
 	cd `dir_aux'
 

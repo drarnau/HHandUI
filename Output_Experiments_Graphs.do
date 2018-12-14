@@ -39,7 +39,7 @@ clear
 
 // Iterate over experiments
 forval e = 1/$nexp {
-	local dir_aux = "$dir_work" + "experiment" + "`e'" + "/"
+	local dir_aux = "$dir_work" + "$mxexp" + "`e'" + "/"
 
 	cd `dir_aux'
 	// Load experiment info
