@@ -51,7 +51,7 @@ subroutine initialisation()
 
   ! Guess average z and tau
   average_z = 2.50
-  tau = 0.3
+  tau = 0.25
 
   ! Generate shocks
   call random_number(shock_z)
