@@ -18,7 +18,7 @@ global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/
 // Specify variable and experiment
 global myvar = "valuevf"
 global myexp = "benchmark"
-global nexp = 16 // Number of experiments
+global nexp = 24 // Number of experiments
 global nbm = 14 // Number of benchmark experiment
 
 // Create empty data set where to store results for all experiments
@@ -149,10 +149,12 @@ foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
 		local lb = floor(min(`min1',`min2',`min3'))
 
 	if abs(`ub') + abs(`lb') > 2  {
-		line `v'_HH1 `v'_HH2 `v'_HH3 b_0, ymtick(`lb'(1)`ub')
+		twoway (scatter `v'_HH1 `v'_HH2 `v'_HH3 b_0) ///
+		(mspline `v'_HH1 b_0) (mspline `v'_HH2 b_0) (mspline `v'_HH3 b_0), ymtick(`lb'(1)`ub')
 		}
 	else {
-		line `v'_HH1 `v'_HH2 `v'_HH3 b_0
+		twoway (scatter `v'_HH1 `v'_HH2 `v'_HH3 b_0) ///
+		(mspline `v'_HH1 b_0) (mspline `v'_HH2 b_0) (mspline `v'_HH3 b_0)
 		}
 	gr export `file_aux', replace
 }
