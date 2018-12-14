@@ -37,4 +37,5 @@ distance.txt
 aggvars.txt
 *.csv
 /experiment*/
+/*/
 output.dta
