@@ -18,7 +18,7 @@ global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/
 // Specify variable and experiment
 global myvar = "valuevf"
 global myexp = "benchmark"
-global nexp = 31 // Number of experiments
+global nexp = 32 // Number of experiments
 global nbm = 14 // Number of benchmark experiment
 
 // Create empty data set where to store results for all experiments
