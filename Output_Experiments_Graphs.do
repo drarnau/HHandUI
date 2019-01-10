@@ -139,7 +139,7 @@ label var r "Interest rate"
 set scheme plotplainblind
 
 foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
-	local file_aux = "$dir_output" + "$myexp" + "_" + "$myvar" + "_" + "`v'" + ".png"
+	local file_aux = "$dir_output" + "$myexp" + "_" + "$myvar" + "_" + "`v'" + ".eps"
 	forval t = 1/3 {
 		qui su `v'_HH`t'
 		local max`t' = `r(max)'
