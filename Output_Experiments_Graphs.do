@@ -18,8 +18,8 @@ global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/
 // Specify variable and experiment
 global myvar = "valuevf"
 global myexp = "benchmark"
-global nexp = 32 // Number of experiments
-global nbm = 14 // Number of benchmark experiment
+global nexp = 30 // Number of experiments
+global nbm = 8 // Number of benchmark experiment
 
 // Create empty data set where to store results for all experiments
 // Each observation is one experiment
@@ -140,7 +140,7 @@ set scheme plotplainblind
 
 foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
 	local file_aux = "$dir_output" + "$myexp" + "_" + "$myvar" + "_" + "`v'" + ".png"
-	forval t = 1/3{
+	forval t = 1/3 {
 		qui su `v'_HH`t'
 		local max`t' = `r(max)'
 		local min`t' = `r(min)'
@@ -150,15 +150,19 @@ foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
 
 	if abs(`ub') + abs(`lb') > 2  {
 		twoway (scatter `v'_HH1 `v'_HH2 `v'_HH3 b_0) ///
-		(mspline `v'_HH1 b_0) (mspline `v'_HH2 b_0) (mspline `v'_HH3 b_0), ymtick(`lb'(1)`ub')
+		(mspline `v'_HH1 b_0, lcolor(black)) ///
+		(mspline `v'_HH2 b_0, lcolor(gray)) ///
+		(mspline `v'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') legend(order(1 2 3))
 		}
 	else {
 		twoway (scatter `v'_HH1 `v'_HH2 `v'_HH3 b_0) ///
-		(mspline `v'_HH1 b_0) (mspline `v'_HH2 b_0) (mspline `v'_HH3 b_0)
+		(mspline `v'_HH1 b_0, lcolor(black)) ///
+		(mspline `v'_HH2 b_0, lcolor(gray)) ///
+		(mspline `v'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3))
 		}
 	gr export `file_aux', replace
 }
 
 
 // Erase output file
-erase output.dta
+// erase output.dta
