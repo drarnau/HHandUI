@@ -1,26 +1,26 @@
 0.99499   ! Discount factor
-0.52099   ! Utility cost of working, single male
+0.51849   ! Utility cost of working, single male
 0.00000   ! Consumption floor, single male
-0.04269   ! Standard deviation search cost, single male
-0.31532   ! Probability of finding a job for unemployed agents, single male
-0.24141   ! Probability of finding a job for OLF agents, single male
+0.04331   ! Standard deviation search cost, single male
+0.31782   ! Probability of finding a job for unemployed agents, single male
+0.26016   ! Probability of finding a job for OLF agents, single male
 0.02101   ! Probability of losing a job for employed agents, single male
 0.51168   ! Utility cost of working, single female
 0.00000   ! Consumption floor, single female
-0.04204   ! Standard deviation search cost, single female
+0.04267   ! Standard deviation search cost, single female
 0.28750   ! Probability of finding a job for unemployed agents, single female
-0.23625   ! Probability of finding a job for OLF agents, single female
+0.23750   ! Probability of finding a job for OLF agents, single female
 0.01430   ! Probability of losing a job for employed agents, single female
 0.17160   ! Utility cost of working married male
-0.36080   ! Utility cost of working married female
+0.36205   ! Utility cost of working married female
 0.02603   ! Utility cost of joint work
 1.70100   ! Consumption floor, married
 1.70000   ! Adult-equivalent scale, married
 0.01395   ! Standard deviation search cost married male
 0.03040   ! Standard deviation search cost married female
-0.78858   ! Probability of finding a job for unemployed married male
-0.39899   ! Probability of finding a job for unemployed married female
-0.70067   ! Probability of finding a job for OLF married male
-0.35269   ! Probability of finding a job for OLF married female
+0.78608   ! Probability of finding a job for unemployed married male
+0.40649   ! Probability of finding a job for unemployed married female
+0.69817   ! Probability of finding a job for OLF married male
+0.35769   ! Probability of finding a job for OLF married female
 0.02661   ! Probability of losing a job for employed married male
 0.01780   ! Probability of losing a job for employed married female
