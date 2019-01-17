@@ -3,7 +3,7 @@ program calibration
   use Utils
   implicit none
 
-  integer, parameter :: maxIter = 100
+  integer, parameter :: maxIter = 25
   integer :: iter
   real(8), parameter :: adj_KL = 0.1d0, adj_T = 0.2d0, adj_avgz = 0.5d0, &
                         tol_KL = 0.01 , tol_T = 0.01, tol_avgz = 0.01
