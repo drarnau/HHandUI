@@ -15,11 +15,12 @@ global dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/"
 // Working directory
 global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI/"
 
-// Specify variable and experiment
-global myvar = "valuevf"
-global myexp = "benchmark"
-global nexp = 32 // Number of experiments
-global nbm = 8 // Number of benchmark experiment
+// Specify variables and experiment
+global myvars = "valuevf consumption"
+global qs = 4 // Number of quantiles for conditional wealth and income
+global myexp = "UIfromSky"
+global nexp = 8 // Number of experiments
+global nbm = 1 // Number of benchmark experiment
 
 // Create empty data set where to store results for all experiments
 // Each observation is one experiment
@@ -28,11 +29,18 @@ foreach v in "b_0" "b_bar" "mu" {
 	gen `v' = .
 	}
 
-foreach v in "mean" "gini" "p10" "p25" "p50" "p75" "p90" {
-	forval t = 1/3 {
-		gen `v'_HH`t' = .
+forval t = 1/3 {
+foreach v of global myvars {
+	foreach d in "mean" "p50"  {
+		gen `v'_`d'_HH`t' = .
+	}
+	foreach cvar in "wealth" "income" {
+		forval myq = 1/$qs {
+			gen `v'_`cvar'q`myq'_HH`t' = .
 		}
 	}
+}
+}
 
 save output, replace
 clear
@@ -52,7 +60,7 @@ forval e = 1/$nexp {
 
 	// Load aggregate variables
 	import delim using aggvars.txt
-	global r = v1[1]
+	global r = ((v1[1]+1)^12)-1
 	global tau = v1[2]
 	global KLratio = v1[3]
 	global average_z = v1[4]
@@ -64,6 +72,7 @@ forval e = 1/$nexp {
 		preserve
 		import delimited simulation_`f'.csv, varnames(1) clear
 		gen HHtype = `f'
+		gen income = labourincome  + benefitsreceived
 		save temp, replace
 		restore
 		append using temp
@@ -77,22 +86,24 @@ forval e = 1/$nexp {
 
 	// Compute VF moments
 	forval t = 1/3 {
-		su $myvar if HHtype == `t', d
-		foreach v in "mean" "p10" "p25" "p50" "p75" "p90" {
-			gen `v'_HH`t' = `r(`v')'
+	foreach v of global myvars {
+		su `v' if HHtype == `t', d
+		foreach d in "mean" "p50" {
+			gen `v'_`d'_HH`t' = `r(`d')'
+		}
+		foreach cvar in "wealth" "income" {
+			xtile aux = `cvar', n(4)
+			forval myq = 1/$qs {
+				su `v' if HHtype == `t' & aux == `myq'
+				gen `v'_`cvar'q`myq'_HH`t' = `r(mean)'
+			}
+			drop aux
 		}
 	}
-
-	// Compute gini VF
-	forval t = 1/3 {
-		fastgini $myvar if HHtype == `t'
-		gen gini_HH`t' = `r(gini)'
-		}
-
+	}
 	// Keep just one observation and relevant variables
 	keep if _n == 1
-	keep mean* p* gini*
-	drop period
+	keep *_HH*
 
 	// Add variables read in txt files
 	foreach v in "b_0" "b_bar" "mu" "r" "tau" "KLratio" "average_z" {
@@ -111,21 +122,23 @@ forval e = 1/$nexp {
 cd $dir_work
 use output.dta
 
-// Normalise all variables with as percentage change with respect to benchmark
+// Normalise all variables as percentage change with respect to benchmark
 sort b_0
-forval t = 1/3 {
-	foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
-		local bm = `v'_HH`t'[$nbm]
-		replace `v'_HH`t' = ((`v'_HH`t' - `bm')/`bm')*100
+	foreach v of var *_HH* {
+		local bm = `v'[$nbm]
+		replace `v' = ((`v' - `bm')/`bm')*100
 		}
-	}
 
 // Label all variables
-foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
-	label var `v'_HH1 "Single Men"
-	label var `v'_HH2 "Single Women"
-	label var `v'_HH3 "Married"
-	}
+foreach v of var *_HH1 {
+	label var `v' "Single Men"
+}
+foreach v of var *_HH2 {
+	label var `v' "Single Women"
+}
+foreach v of var *_HH3 {
+	label var `v' "Married"
+}
 
 label var b_0 "Replacement ratio"
 label var b_bar "Benefits cap"
@@ -135,32 +148,62 @@ label var KLratio "K to L ratio"
 label var average_z "Average z employed"
 label var r "Interest rate"
 
+
 // Plot all variables
 set scheme plotplainblind
 
-foreach v in "mean" "p10" "p25" "p50" "p75" "p90" "gini" {
-	local file_aux = "$dir_output" + "$myexp" + "_" + "$myvar" + "_" + "`v'" + ".eps"
-	forval t = 1/3 {
-		qui su `v'_HH`t'
-		local max`t' = `r(max)'
-		local min`t' = `r(min)'
-		}
-		local ub = ceil(max(`max1',`max2',`max3'))
-		local lb = floor(min(`min1',`min2',`min3'))
+foreach v of global myvars {
+	foreach s in "mean" "p50" {
+		local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + "_" + "`s'" + ".eps"
+		forval t = 1/3 {
+			qui su `v'_`s'_HH`t'
+			local max`t' = `r(max)'
+			local min`t' = `r(min)'
+			}
+			local ub = ceil(max(`max1',`max2',`max3'))
+			local lb = floor(min(`min1',`min2',`min3'))
 
-	if abs(`ub') + abs(`lb') > 2  {
-		twoway (scatter `v'_HH1 `v'_HH2 `v'_HH3 b_0) ///
-		(mspline `v'_HH1 b_0, lcolor(black)) ///
-		(mspline `v'_HH2 b_0, lcolor(gray)) ///
-		(mspline `v'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') legend(order(1 2 3))
-		}
-	else {
-		twoway (scatter `v'_HH1 `v'_HH2 `v'_HH3 b_0) ///
-		(mspline `v'_HH1 b_0, lcolor(black)) ///
-		(mspline `v'_HH2 b_0, lcolor(gray)) ///
-		(mspline `v'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3))
-		}
-	gr export `file_aux', replace
+		if abs(`ub') + abs(`lb') > 2  {
+			twoway (scatter `v'_`s'_HH1 `v'_`s'_HH2 `v'_`s'_HH3 b_0) ///
+			(mspline `v'_`s'_HH1 b_0, lcolor(black)) ///
+			(mspline `v'_`s'_HH2 b_0, lcolor(gray)) ///
+			(mspline `v'_`s'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') legend(order(1 2 3))
+			}
+		else {
+			twoway (scatter `v'_`s'_HH1 `v'_`s'_HH2 `v'_`s'_HH3 b_0) ///
+			(mspline `v'_`s'_HH1 b_0, lcolor(black)) ///
+			(mspline `v'_`s'_HH2 b_0, lcolor(gray)) ///
+			(mspline `v'_`s'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3))
+			}
+		gr export `file_aux', replace
+	}
+	// conditional graphs
+	foreach cvar in "income" "wealth" {
+	forval myq = 1/$qs {
+		local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + "_" + "`cvar'" + "q`myq'" + ".eps"
+		forval t = 1/3 {
+			qui su `v'_`cvar'q`myq'_HH`t'
+			local max`t' = `r(max)'
+			local min`t' = `r(min)'
+			}
+			local ub = ceil(max(`max1',`max2',`max3'))
+			local lb = floor(min(`min1',`min2',`min3'))
+
+		if abs(`ub') + abs(`lb') > 2  {
+			twoway (scatter `v'_`cvar'q`myq'_HH1 `v'_`cvar'q`myq'_HH2 `v'_`cvar'q`myq'_HH3 b_0) ///
+			(mspline `v'_`cvar'q`myq'_HH1 b_0, lcolor(black)) ///
+			(mspline `v'_`cvar'q`myq'_HH2 b_0, lcolor(gray)) ///
+			(mspline `v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') legend(order(1 2 3))
+			}
+		else {
+			twoway (scatter `v'_`cvar'q`myq'_HH1 `v'_`cvar'q`myq'_HH2 `v'_`cvar'q`myq'_HH3 b_0) ///
+			(mspline `v'_`cvar'q`myq'_HH1 b_0, lcolor(black)) ///
+			(mspline `v'_`cvar'q`myq'_HH2 b_0, lcolor(gray)) ///
+			(mspline `v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3))
+			}
+		gr export `file_aux', replace
+	}
+	}
 }
 
 
