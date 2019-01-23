@@ -18,9 +18,9 @@ global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/
 // Specify variables and experiment
 global myvars = "valuevf consumption"
 global qs = 4 // Number of quantiles for conditional wealth and income
-global myexp = "UIfromSky"
-global nexp = 8 // Number of experiments
-global nbm = 1 // Number of benchmark experiment
+global myexp = "SameShocks"
+global nexp = 32 // Number of experiments
+global nbm = 8 // Number of benchmark experiment
 
 // Create empty data set where to store results for all experiments
 // Each observation is one experiment
@@ -114,13 +114,13 @@ forval e = 1/$nexp {
 	local f = "$dir_work" + "output.dta"
 	ap using `f'
 	cd $dir_work
-	save output, replace
+	save output_$my_exp, replace
 	clear
 	}
 
 // Open output dataset
 cd $dir_work
-use output.dta
+use output_$my_exp.dta
 
 // Normalise all variables as percentage change with respect to benchmark
 sort b_0
@@ -208,4 +208,4 @@ foreach v of global myvars {
 
 
 // Erase output file
-// erase output.dta
+// erase output_$my_exp.dta
