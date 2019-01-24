@@ -38,4 +38,4 @@ aggvars.txt
 *.csv
 /experiment*/
 /*/
-output.dta
+output*.dta

@@ -114,13 +114,13 @@ forval e = 1/$nexp {
 	local f = "$dir_work" + "output.dta"
 	ap using `f'
 	cd $dir_work
-	save output_$my_exp, replace
+	save output_$myexp, replace
 	clear
 	}
 
 // Open output dataset
 cd $dir_work
-use output_$my_exp.dta
+use output_$myexp.dta
 
 // Normalise all variables as percentage change with respect to benchmark
 sort b_0
@@ -208,4 +208,4 @@ foreach v of global myvars {
 
 
 // Erase output file
-// erase output_$my_exp.dta
+// erase output_$myexp.dta
