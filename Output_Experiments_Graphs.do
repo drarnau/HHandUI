@@ -18,7 +18,7 @@ global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/
 // Specify variables and experiment
 global myvars = "valuevf consumption"
 global qs = 4 // Number of quantiles for conditional wealth and income
-global myexp = "SameShocks"
+global myexp = "benchmark"
 global nexp = 32 // Number of experiments
 global nbm = 8 // Number of benchmark experiment
 
@@ -111,7 +111,7 @@ forval e = 1/$nexp {
 		}
 
 	// Append to output.dat
-	local f = "$dir_work" + "output.dta"
+	local f = "$dir_work" + "output_" + "$myexp" + ".dta"
 	ap using `f'
 	cd $dir_work
 	save output_$myexp, replace
