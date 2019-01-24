@@ -42,7 +42,7 @@ foreach v of global myvars {
 }
 }
 
-save output, replace
+save output_$myexp, replace
 clear
 
 // Iterate over experiments
