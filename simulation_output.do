@@ -46,26 +46,28 @@ lab val married lab_married
 // Set panel structure
 tsset id period
 
-/*
+
 // Histagrams
 	// All
-	hist wealth, width(50)
-	graph export "`dir_output'`aux_name'wealth_total.png", replace
-	hist valuevf, width(5) //ysc(r(0 0.02)) ylabel(0(0.005)0.02)
-	graph export "`dir_output'`aux_name'valuevf_total.png", replace
+	hist wealth, width(50) graphregion(color(white))
+	graph export "`dir_output'`aux_name'wealth_total.eps", replace
+	// hist valuevf, width(5) graphregion(color(white)) //ysc(r(0 0.02)) ylabel(0(0.005)0.02)
+	// graph export "`dir_output'`aux_name'valuevf_total.eps", replace
 
 	// Married and single
 	twoway 	(hist wealth if married==1, width(50) color(green)) ///
 		(hist wealth if married==0, width(50) ///
-		fcolor(none) lcolor(black)), legend(order(1 "Married" 2 "Single" ))
-	graph export "`dir_output'`aux_name'wealth_bymaritalstatus.png", replace
+		fcolor(none) lcolor(black)), legend(order(1 "Married" 2 "Single" )) ///
+		graphregion(color(white))
+	graph export "`dir_output'`aux_name'wealth_bymaritalstatus.eps", replace
 
 
-	twoway 	(hist valuevf if married==1, width(5) color(green)) ///
-		(hist valuevf if married==0, width(5) ///
-		fcolor(none) lcolor(black)), legend(order(1 "Married" 2 "Single" ))
-	graph export "`dir_output'`aux_name'valuevf_bymaritalstatus.png", replace
-
+	// twoway 	(hist valuevf if married==1, width(5) color(green)) ///
+	// 	(hist valuevf if married==0, width(5) ///
+	// 	fcolor(none) lcolor(black)), legend(order(1 "Married" 2 "Single" )) ///
+	// 	graphregion(color(white))
+	// graph export "`dir_output'`aux_name'valuevf_bymaritalstatus.eps", replace
+/*
 // Added worker effect
 gen awe = 1 if statusfemaletoday == 3 & statusfemaletomorrow == 2
 replace awe = 1 if statusfemaletoday == 3 & statusfemaletomorrow == 1
@@ -90,7 +92,7 @@ margins, dydx(EU) atmeans
 		su valuevf if married == `m', d
 		}
 */
-
+/*
 // Wealth distribution single vs. married
 forval m = 0/1 {
 	su wealth if married == `m'
