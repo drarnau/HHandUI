@@ -77,4 +77,13 @@ subroutine Difference()
   end do
   close(12)
 
+  ! Print aggregate variables
+  open(unit = 13, file = "aggvars.txt")
+  write(13,*) int_rate
+  write(13,*) tau
+  write(13,*) KLratio
+  write(13,*) average_z
+  write(13,*) wage
+  close(13)
+
 end subroutine Difference
