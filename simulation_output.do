@@ -46,7 +46,7 @@ lab val married lab_married
 // Set panel structure
 tsset id period
 
-
+/*
 // Histagrams
 	// All
 	hist wealth, width(50) graphregion(color(white))
@@ -67,8 +67,9 @@ tsset id period
 	// 	fcolor(none) lcolor(black)), legend(order(1 "Married" 2 "Single" )) ///
 	// 	graphregion(color(white))
 	// graph export "`dir_output'`aux_name'valuevf_bymaritalstatus.eps", replace
-/*
-// Added worker effect
+*/
+
+// Added worker effect for FEMALES
 gen awe = 1 if statusfemaletoday == 3 & statusfemaletomorrow == 2
 replace awe = 1 if statusfemaletoday == 3 & statusfemaletomorrow == 1
 // replace awe = 0 if married == 1 & statusfemaletoday == 3 & awe == .
@@ -81,6 +82,20 @@ replace EU = 0 if married == 1 & EU == .
 probit awe EU
 margins, dydx(EU) atmeans
 
+// Added worker effect for MALES
+gen awe = 1 if statusmaletoday == 3 & statusmaletomorrow == 2
+replace awe = 1 if statusmaletoday == 3 & statusmaletomorrow == 1
+// replace awe = 0 if married == 1 & statusfemaletoday == 3 & awe == .
+replace awe = 0 if married == 1 & awe == .
+
+gen EU = 1 if statusfemaletoday == 1 & statusfemaletomorrow == 2
+// replace EU = 0 if married == 1 & statusmaletoday == 1 & EU == .
+replace EU = 0 if married == 1 & EU == .
+
+probit awe EU
+margins, dydx(EU) atmeans
+
+/*
 // Summary with details
 	// All
 	su wealth, d
