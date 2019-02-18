@@ -66,6 +66,19 @@ forval e = 1/$nexp {
 	global average_z = v1[4]
 	clear
 
+	// Load model otuput
+	import delim using model.txt
+	global ER_m0_s1 = v1[10]
+	global UR_m0_s1 = v1[11]
+	global ER_m0_s2 = v1[21]
+	global UR_m0_s2 = v1[22]
+	global ER_m1_s1 = v1[32]
+	global UR_m1_s1 = v1[33]
+	global ER_m1_s2 = v1[43]
+	global UR_m1_s2 = v1[44]
+
+	clear
+
 
 	// Read csv files
 	forval f = 1/3 {
@@ -84,7 +97,7 @@ forval e = 1/$nexp {
 	label define lab_hhtype  1 "Single Men" 2 "Single Women" 3 "Married Household"
 	lab val HHtype lab_hhtype
 
-	// Compute VF moments
+	// Compute myvars moments
 	forval t = 1/3 {
 	foreach v of global myvars {
 		su `v' if HHtype == `t', d
@@ -101,6 +114,25 @@ forval e = 1/$nexp {
 		}
 	}
 	}
+
+	// Compute gini
+	fastgini wealth
+	gen gwealth_HHall = `r(gini)'
+	forval t = 1/3 {
+		fastgini wealth if HHtype == `t'
+		gen gwealth_HH`t' = `r(gini)'
+	}
+
+	fastgini wealth if HHtype <= 2
+	gen gwealth_HHsingles = `r(gini)'
+
+	// Compute ratio assets
+	su wealth if HHtype <= 2
+	local singles = `r(sum)'
+
+	su wealth if HHtype == 3
+	gen rwealth_HHall = `r(sum)' / `singles'
+
 	// Keep just one observation and relevant variables
 	keep if _n == 1
 	keep *_HH*
@@ -109,6 +141,14 @@ forval e = 1/$nexp {
 	foreach v in "b_0" "b_bar" "mu" "r" "tau" "KLratio" "average_z" {
 		gen `v' = ${`v'}
 		}
+
+	foreach v in "ER" "UR"{
+		forval m = 0/1 {
+			forval s = 1/2 {
+				gen `v'_m`m'_s`s' = ${`v'_m`m'_s`s'}
+			}
+		}
+	}
 
 	// Append to output.dat
 	local f = "$dir_work" + "output_" + "$myexp" + ".dta"
@@ -124,10 +164,10 @@ use output_$myexp.dta
 
 // Normalise all variables as percentage change with respect to benchmark
 sort b_0
-	foreach v of var *_HH* {
-		local bm = `v'[$nbm]
-		replace `v' = ((`v' - `bm')/`bm')*100
-		}
+foreach v of var *_HH* *_m*_s* tau* KLratio* {
+	local bm = `v'[$nbm]
+	replace `v' = ((`v' - `bm')/`bm')*100
+	}
 
 // Label all variables
 foreach v of var *_HH1 {
@@ -147,6 +187,23 @@ label var tau "Income tax"
 label var KLratio "K to L ratio"
 label var average_z "Average z employed"
 label var r "Interest rate"
+
+foreach v of var *m0_s1 {
+	label var `v' "Single Men"
+}
+foreach v of var *m0_s2 {
+	label var `v' "Single Women"
+}
+foreach v of var *m1_s1 {
+	label var `v' "Married Men"
+}
+foreach v of var *m1_s2 {
+	label var `v' "Married Women"
+}
+
+foreach v of var *all* {
+	label var `v' "All"
+}
 
 
 // Plot all variables
@@ -177,6 +234,7 @@ foreach v of global myvars {
 			}
 		gr export `file_aux', replace
 	}
+
 	// conditional graphs
 	foreach cvar in "income" "wealth" {
 	forval myq = 1/$qs {
@@ -205,6 +263,34 @@ foreach v of global myvars {
 	}
 	}
 }
+
+// ER and UR
+foreach v in "ER" "UR" {
+	local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + ".eps"
+	twoway (scatter `v'_m0_s1 `v'_m0_s2 `v'_m1_s1 `v'_m1_s2 b_0) ///
+	(mspline `v'_m0_s1 b_0, lcolor(black)) ///
+	(mspline `v'_m0_s2 b_0, lcolor(gray)) ///
+	(mspline `v'_m1_s1 b_0, lcolor(ltblue)) ///
+	(mspline `v'_m1_s2 b_0, lcolor(green)),  legend(order(1 2 3 4))
+	gr export `file_aux', replace
+}
+
+// Variables graphed alone
+foreach v in "rwealth_HHall" "KLratio" "tau" {
+	local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + ".eps"
+	twoway (scatter `v' b_0) ///
+	(mspline `v' b_0, lcolor(black)),  legend(off)
+	gr export `file_aux', replace
+}
+
+// Gini
+local file_aux = "$dir_output" + "$myexp" + "_" + "gini" + ".eps"
+twoway (scatter gwealth_HH1 gwealth_HH2 gwealth_HH3 gwealth_HHall b_0) ///
+(mspline gwealth_HH1 b_0, lcolor(black)) ///
+(mspline gwealth_HH2 b_0, lcolor(gray)) ///
+(mspline gwealth_HH3 b_0, lcolor(ltblue)) ///
+(mspline gwealth_HHall b_0, lcolor(green)),  legend(order(1 2 3 4))
+gr export `file_aux', replace
 
 
 // Erase output file
