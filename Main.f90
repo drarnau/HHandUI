@@ -31,31 +31,31 @@ program calibration
     call mytime(t_finish-t_start)
 
   ! SOLVE THE MODEL FOR SINGLE FEMALES
-    call cpu_time(t_start)
-
-    call Singles(2)
-
-    call cpu_time(t_finish)
-    print *, "Time to solve single females:"
-    call mytime(t_finish-t_start)
+    ! call cpu_time(t_start)
+    !
+    ! call Singles(2)
+    !
+    ! call cpu_time(t_finish)
+    ! print *, "Time to solve single females:"
+    ! call mytime(t_finish-t_start)
 
   ! SOLVE THE MODEL FOR MARRIED HOUSEHOLDS
-    call cpu_time(t_start)
-
-    call MarriedHH()
-
-    call cpu_time(t_finish)
-    print *, "Time to solve married households:"
-    call mytime(t_finish-t_start)
+    ! call cpu_time(t_start)
+    !
+    ! call MarriedHH()
+    !
+    ! call cpu_time(t_finish)
+    ! print *, "Time to solve married households:"
+    ! call mytime(t_finish-t_start)
 
   ! CHECK EQUILIBRIUM IS REACHED
     ! Compute aggregates
     ! new_KLratio = aggregate3(aux_KLratio)
-    tempK = wealth(1)*weights(0,1) + wealth(2)*weights(0,2) + wealth(3)*(weights(1,1)+weights(1,2))
-    tempL = aux_tot_z(1)*weights(0,1) + aux_tot_z(2)*weights(0,2) + aux_tot_z(3)*(weights(1,1)+weights(1,2))
+    tempK = wealth(1)
+    tempL = aux_tot_z(1)
     new_KLratio =  tempK/tempL
-    new_tau = (aggregate3(aux_bpaid) + aggregate3((/T*agents,T*agents,T*agents/))) / aggregate3(aux_labincome)
-    new_average_z = aggregate3(aux_average_z)
+    new_tau = (aux_bpaid(1) + T*agents) / aux_labincome(1)
+    new_average_z = aux_average_z(1)
 
     ! Compute errors
     ! error_KL = abs(KLratio-new_KLratio)
@@ -93,8 +93,8 @@ program calibration
 
   ! Simulate and print simulation output
   call SimSingles(1,.true.) ! Single males
-  call SimSingles(2,.true.) ! Single females
-  call SimMarried(.true.) ! Married
+  ! call SimSingles(2,.true.) ! Single females
+  ! call SimMarried(.true.) ! Married
 
   call cpu_time(finish)
   print *, "Total time to solve the model:"

@@ -44,8 +44,8 @@ subroutine Difference()
     print '(a,f10.7,a,f10.7)', " Married-single wealth ratio (Data vs. Model):", &
                                 dmarsing_ratio, "   ", marsing_ratio
     print *, "*************************************************************************"
-    do myms = 0, 1
-    do mysex = 1, 2
+    do myms = 0, 0
+    do mysex = 1, 1
       ! Screen
       print *, "========================================================================="
       print *, "Marital Status:", myms
@@ -64,8 +64,8 @@ subroutine Difference()
 
     ! Print results to txt file
     open(unit = 12, file = "model.txt")
-    do myms = 0, 1
-    do mysex = 1, 2
+    do myms = 0, 0
+    do mysex = 1, 1
       do td = 1, 3
       do tw = 1, 3
         write (12, *) transitions(myms,mysex,td,tw)
