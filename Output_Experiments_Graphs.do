@@ -133,6 +133,42 @@ forval e = 1/$nexp {
 	su wealth if HHtype == 3
 	gen rwealth_HHall = `r(sum)' / `singles'
 
+	// Compute UR and ER conditional on spouse state
+	forval s = 1/2 {
+		if (`s' == 1) {
+			local main = "male"
+			local sp = "female"
+		}
+		else if (`s' == 2) {
+			local main = "female"
+		  local sp = "male"
+		}
+
+		// Employment rate
+		gen aux = 1 if status`main'today == 1
+		replace aux = 0 if aux == .
+
+		su aux if status`sp'today == 1
+		gen ER`main'_HH`sp'1 = `r(mean)'
+
+		su aux if status`sp'today != 1
+		gen ER`main'_HH`sp'0 = `r(mean)'
+
+		drop aux
+
+		// Unemployment rate
+		gen aux = 1 if status`main'today == 2
+		replace aux = 0 if aux == . & status`main'today == 1
+
+		su aux if status`sp'today == 1
+		gen UR`main'_HH`sp'1 = `r(mean)'
+
+		su aux if status`sp'today != 1
+		gen UR`main'_HH`sp'0 = `r(mean)'
+
+		drop aux
+	}
+
 	// Keep just one observation and relevant variables
 	keep if _n == 1
 	keep *_HH*
@@ -205,6 +241,19 @@ foreach v of var *all* {
 	label var `v' "All"
 }
 
+foreach v of var *male_HHfemale0 {
+	label var `v' "Male, spouse not emp."
+}
+foreach v of var *male_HHfemale1 {
+	label var `v' "Male, spouse emp."
+}
+foreach v of var *female_HHmale0 {
+	label var `v' "Female, spouse not emp."
+}
+foreach v of var *female_HHmale1 {
+	label var `v' "Female, spouse emp."
+}
+
 
 // Plot all variables
 set scheme plotplainblind
@@ -272,6 +321,17 @@ foreach v in "ER" "UR" {
 	(mspline `v'_m0_s2 b_0, lcolor(gray)) ///
 	(mspline `v'_m1_s1 b_0, lcolor(ltblue)) ///
 	(mspline `v'_m1_s2 b_0, lcolor(green)),  legend(order(1 2 3 4))
+	gr export `file_aux', replace
+}
+
+// ER and UR conditional spouse
+foreach v in "ER" "UR" {
+	local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + "_cspouse" + ".eps"
+	twoway (scatter `v'male_HHfemale0 `v'male_HHfemale1 `v'female_HHmale0 `v'female_HHmale1 b_0) ///
+	(mspline `v'male_HHfemale0 b_0, lcolor(black)) ///
+	(mspline `v'male_HHfemale1 b_0, lcolor(gray)) ///
+	(mspline `v'female_HHmale0 b_0, lcolor(ltblue)) ///
+	(mspline `v'female_HHmale1 b_0, lcolor(green)),  legend(order(1 2 3 4))
 	gr export `file_aux', replace
 }
 
