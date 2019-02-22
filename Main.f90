@@ -51,9 +51,9 @@ program calibration
   ! CHECK EQUILIBRIUM IS REACHED
     ! Compute aggregates
     ! new_KLratio = aggregate3(aux_KLratio)
-    tempK = wealth(1)
-    tempL = aux_tot_z(1)
-    new_KLratio =  tempK/tempL
+    ! tempK = wealth(1)
+    ! tempL = aux_tot_z(1)
+    new_KLratio =  KLratio
     new_tau = (aux_bpaid(1) + T*agents) / aux_labincome(1)
     new_average_z = aux_average_z(1)
 
@@ -74,11 +74,11 @@ program calibration
     print *, ""
 
     ! Update equilibrium values
-    KLratio = adj_KL*new_KLratio + (1.d0-adj_KL)*KLratio
-    KLratio = min(KLratio, 0.99d0*(delta/theta)**(1/(theta-1)))
+    ! KLratio = adj_KL*new_KLratio + (1.d0-adj_KL)*KLratio
+    ! KLratio = min(KLratio, 0.99d0*(delta/theta)**(1/(theta-1)))
     tau = adj_tau*new_tau + (1.d0-adj_tau)*tau
     average_z = adj_avgz*new_average_z + (1.d0-adj_avgz)*average_z
-    call Prices(KLratio, int_rate, wage)
+    ! call Prices(KLratio, int_rate, wage)
 
     ! Check errors and tolerance
     if ((error_KL.lt.tol_KL).and.(error_tau.lt.tol_tau).and.(error_avgz.lt.tol_avgz)) then
