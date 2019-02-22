@@ -18,7 +18,7 @@ global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/
 // Specify variables and experiment
 global myvars = "valuevf consumption"
 global qs = 4 // Number of quantiles for conditional wealth and income
-global myexp = "benchmark"
+global myexp = "SingleMen"
 global nexp = 32 // Number of experiments
 global nbm = 8 // Number of benchmark experiment
 
@@ -29,17 +29,15 @@ foreach v in "b_0" "b_bar" "mu" {
 	gen `v' = .
 	}
 
-forval t = 1/3 {
 foreach v of global myvars {
 	foreach d in "mean" "p50"  {
-		gen `v'_`d'_HH`t' = .
+		gen `v'_`d'_HH = .
 	}
 	foreach cvar in "wealth" "income" {
 		forval myq = 1/$qs {
-			gen `v'_`cvar'q`myq'_HH`t' = .
+			gen `v'_`cvar'q`myq'_HH = .
 		}
 	}
-}
 }
 
 save output_$myexp, replace
@@ -68,122 +66,65 @@ forval e = 1/$nexp {
 
 	// Load model otuput
 	import delim using model.txt
-	global ER_m0_s1 = v1[10]
-	global UR_m0_s1 = v1[11]
-	global ER_m0_s2 = v1[21]
-	global UR_m0_s2 = v1[22]
-	global ER_m1_s1 = v1[32]
-	global UR_m1_s1 = v1[33]
-	global ER_m1_s2 = v1[43]
-	global UR_m1_s2 = v1[44]
-
+	local linia = 1
+	forval td = 1/3 {
+	forval tw = 1/3 {
+		global TR`td'`tw' = v1[`linia']
+		local linia = `linia' + 1
+	}
+	}
+	foreach r in "ER" "UR" {
+		global `r' = v1[`linia']
+		local linia = `linia' + 1
+	}
 	clear
 
-
-	// Read csv files
-	forval f = 1/3 {
-		preserve
-		import delimited simulation_`f'.csv, varnames(1) clear
-		gen HHtype = `f'
-		gen income = labourincome  + benefitsreceived
-		save temp, replace
-		restore
-		append using temp
-		}
-	erase temp.dta
-
-	// Label HHtype variable
-	label var HHtype "Household type"
-	label define lab_hhtype  1 "Single Men" 2 "Single Women" 3 "Married Household"
-	lab val HHtype lab_hhtype
+	// Read csv file
+	import delimited simulation_1.csv, varnames(1) clear
+	gen income = labourincome  + benefitsreceived
 
 	// Compute myvars moments
-	forval t = 1/3 {
 	foreach v of global myvars {
-		su `v' if HHtype == `t', d
+		su `v', d
 		foreach d in "mean" "p50" {
-			gen `v'_`d'_HH`t' = `r(`d')'
+			gen `v'_`d'_HH = `r(`d')'
 		}
 		foreach cvar in "wealth" "income" {
 			xtile aux = `cvar', n(4)
 			forval myq = 1/$qs {
-				su `v' if HHtype == `t' & aux == `myq'
-				gen `v'_`cvar'q`myq'_HH`t' = `r(mean)'
+				su `v' if aux == `myq'
+				if (`r(N)') > 0 {
+					gen `v'_`cvar'q`myq'_HH = `r(mean)'
+				}
+				else {
+				  gen `v'_`cvar'q`myq'_HH = .
+				}
+
 			}
 			drop aux
 		}
 	}
-	}
 
 	// Compute gini
 	fastgini wealth
-	gen gwealth_HHall = `r(gini)'
-	forval t = 1/3 {
-		fastgini wealth if HHtype == `t'
-		gen gwealth_HH`t' = `r(gini)'
-	}
-
-	fastgini wealth if HHtype <= 2
-	gen gwealth_HHsingles = `r(gini)'
-
-	// Compute ratio assets
-	su wealth if HHtype <= 2
-	local singles = `r(sum)'
-
-	su wealth if HHtype == 3
-	gen rwealth_HHall = `r(sum)' / `singles'
-
-	// Compute UR and ER conditional on spouse state
-	forval s = 1/2 {
-		if (`s' == 1) {
-			local main = "male"
-			local sp = "female"
-		}
-		else if (`s' == 2) {
-			local main = "female"
-		  local sp = "male"
-		}
-
-		// Employment rate
-		gen aux = 1 if status`main'today == 1
-		replace aux = 0 if aux == .
-
-		su aux if status`sp'today == 1
-		gen ER`main'_HH`sp'1 = `r(mean)'
-
-		su aux if status`sp'today != 1
-		gen ER`main'_HH`sp'0 = `r(mean)'
-
-		drop aux
-
-		// Unemployment rate
-		gen aux = 1 if status`main'today == 2
-		replace aux = 0 if aux == . & status`main'today == 1
-
-		su aux if status`sp'today == 1
-		gen UR`main'_HH`sp'1 = `r(mean)'
-
-		su aux if status`sp'today != 1
-		gen UR`main'_HH`sp'0 = `r(mean)'
-
-		drop aux
-	}
+	gen gwealth_HH = `r(gini)'
 
 	// Keep just one observation and relevant variables
 	keep if _n == 1
-	keep *_HH*
+	keep *_HH
 
 	// Add variables read in txt files
 	foreach v in "b_0" "b_bar" "mu" "r" "tau" "KLratio" "average_z" {
 		gen `v' = ${`v'}
 		}
 
-	foreach v in "ER" "UR"{
-		forval m = 0/1 {
-			forval s = 1/2 {
-				gen `v'_m`m'_s`s' = ${`v'_m`m'_s`s'}
-			}
-		}
+	forval td = 1/3 {
+	forval tw = 1/3 {
+		gen TR`td'`tw' = ${TR`td'`tw'}
+	}
+	}
+	foreach r in "ER" "UR" {
+		gen `r' = ${`r'}
 	}
 
 	// Append to output.dat
@@ -194,163 +135,44 @@ forval e = 1/$nexp {
 	clear
 	}
 
+
 // Open output dataset
 cd $dir_work
 use output_$myexp.dta
 
 // Normalise all variables as percentage change with respect to benchmark
 sort b_0
-foreach v of var *_HH* *_m*_s* tau* KLratio* {
+foreach v of var *_HH* tau* KLratio* TR* ER* UR* {
 	local bm = `v'[$nbm]
-	replace `v' = ((`v' - `bm')/`bm')*100
+	gen wrtb_`v' = ((`v' - `bm')/`bm')*100
 	}
 
-// Label all variables
-foreach v of var *_HH1 {
-	label var `v' "Single Men"
-}
-foreach v of var *_HH2 {
-	label var `v' "Single Women"
-}
-foreach v of var *_HH3 {
-	label var `v' "Married"
+// Rates and probabilities as percentage
+foreach v of var TR* ER* UR* {
+	replace `v' = `v' * 100
 }
 
 label var b_0 "Replacement ratio"
 label var b_bar "Benefits cap"
 label var mu "Duration"
 label var tau "Income tax"
+label var wrtb_tau "Income tax"
 label var KLratio "K to L ratio"
+label var wrtb_KLratio "K to L ratio"
 label var average_z "Average z employed"
 label var r "Interest rate"
-
-foreach v of var *m0_s1 {
-	label var `v' "Single Men"
-}
-foreach v of var *m0_s2 {
-	label var `v' "Single Women"
-}
-foreach v of var *m1_s1 {
-	label var `v' "Married Men"
-}
-foreach v of var *m1_s2 {
-	label var `v' "Married Women"
-}
-
-foreach v of var *all* {
-	label var `v' "All"
-}
-
-foreach v of var *male_HHfemale0 {
-	label var `v' "Male, spouse not emp."
-}
-foreach v of var *male_HHfemale1 {
-	label var `v' "Male, spouse emp."
-}
-foreach v of var *female_HHmale0 {
-	label var `v' "Female, spouse not emp."
-}
-foreach v of var *female_HHmale1 {
-	label var `v' "Female, spouse emp."
-}
 
 
 // Plot all variables
 set scheme plotplainblind
 
-foreach v of global myvars {
-	foreach s in "mean" "p50" {
-		local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + "_" + "`s'" + ".eps"
-		forval t = 1/3 {
-			qui su `v'_`s'_HH`t'
-			local max`t' = `r(max)'
-			local min`t' = `r(min)'
-			}
-			local ub = ceil(max(`max1',`max2',`max3'))
-			local lb = floor(min(`min1',`min2',`min3'))
-
-		if abs(`ub') + abs(`lb') > 2  {
-			twoway (scatter `v'_`s'_HH1 `v'_`s'_HH2 `v'_`s'_HH3 b_0) ///
-			(mspline `v'_`s'_HH1 b_0, lcolor(black)) ///
-			(mspline `v'_`s'_HH2 b_0, lcolor(gray)) ///
-			(mspline `v'_`s'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') legend(order(1 2 3))
-			}
-		else {
-			twoway (scatter `v'_`s'_HH1 `v'_`s'_HH2 `v'_`s'_HH3 b_0) ///
-			(mspline `v'_`s'_HH1 b_0, lcolor(black)) ///
-			(mspline `v'_`s'_HH2 b_0, lcolor(gray)) ///
-			(mspline `v'_`s'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3))
-			}
-		gr export `file_aux', replace
-	}
-
-	// conditional graphs
-	foreach cvar in "income" "wealth" {
-	forval myq = 1/$qs {
-		local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + "_" + "`cvar'" + "q`myq'" + ".eps"
-		forval t = 1/3 {
-			qui su `v'_`cvar'q`myq'_HH`t'
-			local max`t' = `r(max)'
-			local min`t' = `r(min)'
-			}
-			local ub = ceil(max(`max1',`max2',`max3'))
-			local lb = floor(min(`min1',`min2',`min3'))
-
-		if abs(`ub') + abs(`lb') > 2  {
-			twoway (scatter `v'_`cvar'q`myq'_HH1 `v'_`cvar'q`myq'_HH2 `v'_`cvar'q`myq'_HH3 b_0) ///
-			(mspline `v'_`cvar'q`myq'_HH1 b_0, lcolor(black)) ///
-			(mspline `v'_`cvar'q`myq'_HH2 b_0, lcolor(gray)) ///
-			(mspline `v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') legend(order(1 2 3))
-			}
-		else {
-			twoway (scatter `v'_`cvar'q`myq'_HH1 `v'_`cvar'q`myq'_HH2 `v'_`cvar'q`myq'_HH3 b_0) ///
-			(mspline `v'_`cvar'q`myq'_HH1 b_0, lcolor(black)) ///
-			(mspline `v'_`cvar'q`myq'_HH2 b_0, lcolor(gray)) ///
-			(mspline `v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3))
-			}
-		gr export `file_aux', replace
-	}
-	}
-}
-
-// ER and UR
-foreach v in "ER" "UR" {
-	local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + ".eps"
-	twoway (scatter `v'_m0_s1 `v'_m0_s2 `v'_m1_s1 `v'_m1_s2 b_0) ///
-	(mspline `v'_m0_s1 b_0, lcolor(black)) ///
-	(mspline `v'_m0_s2 b_0, lcolor(gray)) ///
-	(mspline `v'_m1_s1 b_0, lcolor(ltblue)) ///
-	(mspline `v'_m1_s2 b_0, lcolor(green)),  legend(order(1 2 3 4))
-	gr export `file_aux', replace
-}
-
-// ER and UR conditional spouse
-foreach v in "ER" "UR" {
-	local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + "_cspouse" + ".eps"
-	twoway (scatter `v'male_HHfemale0 `v'male_HHfemale1 `v'female_HHmale0 `v'female_HHmale1 b_0) ///
-	(mspline `v'male_HHfemale0 b_0, lcolor(black)) ///
-	(mspline `v'male_HHfemale1 b_0, lcolor(gray)) ///
-	(mspline `v'female_HHmale0 b_0, lcolor(ltblue)) ///
-	(mspline `v'female_HHmale1 b_0, lcolor(green)),  legend(order(1 2 3 4))
-	gr export `file_aux', replace
-}
-
 // Variables graphed alone
-foreach v in "rwealth_HHall" "KLratio" "tau" {
-	local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + ".eps"
-	twoway (scatter `v' b_0) ///
-	(mspline `v' b_0, lcolor(black)),  legend(off)
+foreach v of var *_HH* tau* KLratio* TR* ER* UR* {
+	local file_aux = "$dir_output" + "$myexp" + "_" + "`tp'" + "`v'" + ".eps"
+	twoway (scatter `tp'`v' b_0) ///
+	(mspline `tp'`v' b_0, lcolor(black)),  legend(off)
 	gr export `file_aux', replace
 }
-
-// Gini
-local file_aux = "$dir_output" + "$myexp" + "_" + "gini" + ".eps"
-twoway (scatter gwealth_HH1 gwealth_HH2 gwealth_HH3 gwealth_HHall b_0) ///
-(mspline gwealth_HH1 b_0, lcolor(black)) ///
-(mspline gwealth_HH2 b_0, lcolor(gray)) ///
-(mspline gwealth_HH3 b_0, lcolor(ltblue)) ///
-(mspline gwealth_HHall b_0, lcolor(green)),  legend(order(1 2 3 4))
-gr export `file_aux', replace
 
 
 // Erase output file
