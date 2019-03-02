@@ -234,7 +234,7 @@ foreach v of var *_HH* tau* KLratio* TR* ER* UR* {
 	}
 
 // Rates and probabilities as percentage
-foreach v of var TR* ER* UR* {
+foreach v of var TR* ER* UR* tau* {
 	replace `v' = `v' * 100
 }
 // Label all variables
@@ -308,13 +308,14 @@ foreach v of global myvars {
 			twoway (scatter `tp'`v'_`s'_HH1 `tp'`v'_`s'_HH2 `tp'`v'_`s'_HH3 b_0) ///
 			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(black)) ///
 			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') legend(order(1 2 3))
+			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') ///
+																		legend(order(1 2 3) position(6) r(1))
 			}
 		else {
 			twoway (scatter `tp'`v'_`s'_HH1 `tp'`v'_`s'_HH2 `tp'`v'_`s'_HH3 b_0) ///
 			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(black)) ///
 			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3))
+			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3) position(6) r(1))
 			}
 		gr export `file_aux', replace
 	}
@@ -337,13 +338,14 @@ foreach v of global myvars {
 			twoway (scatter `tp'`v'_`cvar'q`myq'_HH1 `tp'`v'_`cvar'q`myq'_HH2 `tp'`v'_`cvar'q`myq'_HH3 b_0) ///
 			(mspline `tp'`v'_`cvar'q`myq'_HH1 b_0, lcolor(black)) ///
 			(mspline `tp'`v'_`cvar'q`myq'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') legend(order(1 2 3))
+			(mspline `tp'`v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') ///
+																						 legend(order(1 2 3) position(6) r(1))
 			}
 		else {
 			twoway (scatter `tp'`v'_`cvar'q`myq'_HH1 `tp'`v'_`cvar'q`myq'_HH2 `tp'`v'_`cvar'q`myq'_HH3 b_0) ///
 			(mspline `tp'`v'_`cvar'q`myq'_HH1 b_0, lcolor(black)) ///
 			(mspline `tp'`v'_`cvar'q`myq'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3))
+			(mspline `tp'`v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3) position(6) r(1))
 			}
 		gr export `file_aux', replace
 	}
@@ -362,7 +364,7 @@ foreach v in 	"TR11" "TR12" "TR13" ///
 	(mspline `tp'`v'_m0_s1 b_0, lcolor(black)) ///
 	(mspline `tp'`v'_m0_s2 b_0, lcolor(gray)) ///
 	(mspline `tp'`v'_m1_s1 b_0, lcolor(ltblue)) ///
-	(mspline `tp'`v'_m1_s2 b_0, lcolor(green)),  legend(order(1 2 3 4))
+	(mspline `tp'`v'_m1_s2 b_0, lcolor(green)),  legend(order(1 2 3 4) position(6) r(1))
 	gr export `file_aux', replace
 }
 }
@@ -378,7 +380,7 @@ foreach v in 	"TR11" "TR12" "TR13" ///
 	(mspline `tp'`v'_s1_sp0 b_0, lcolor(black)) ///
 	(mspline `tp'`v'_s1_sp1 b_0, lcolor(gray)) ///
 	(mspline `tp'`v'_s2_sp0 b_0, lcolor(ltblue)) ///
-	(mspline `tp'`v'_s2_sp1 b_0, lcolor(green)),  legend(order(1 2 3 4))
+	(mspline `tp'`v'_s2_sp1 b_0, lcolor(green)),  legend(order(1 2 3 4) position(6) r(1))
 	gr export `file_aux', replace
 }
 }
@@ -400,7 +402,7 @@ foreach tp in "" "wrtb_" {
 	(mspline `tp'gwealth_HH1 b_0, lcolor(black)) ///
 	(mspline `tp'gwealth_HH2 b_0, lcolor(gray)) ///
 	(mspline `tp'gwealth_HH3 b_0, lcolor(ltblue)) ///
-	(mspline `tp'gwealth_HHall b_0, lcolor(green)),  legend(order(1 2 3 4))
+	(mspline `tp'gwealth_HHall b_0, lcolor(green)),  legend(order(1 2 3 4) position(6) r(1))
 	gr export `file_aux', replace
 }
 
