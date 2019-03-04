@@ -167,10 +167,10 @@ label var r "Interest rate"
 set scheme plotplainblind
 
 // Variables graphed alone
-foreach v of var *_HH* tau* KLratio* TR* ER* UR* {
-	local file_aux = "$dir_output" + "$myexp" + "_" + "`tp'" + "`v'" + ".eps"
-	twoway (scatter `tp'`v' b_0) ///
-	(mspline `tp'`v' b_0, lcolor(black)),  legend(off)
+foreach v of var *_HH* *tau* *KLratio* *TR* *ER* *UR* {
+	local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + ".eps"
+	twoway (scatter `v' b_0) ///
+	(mspline `v' b_0, lcolor(black)),  legend(off)
 	gr export `file_aux', replace
 }
 
