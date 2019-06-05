@@ -10,7 +10,7 @@ set more off, perm
 set trace off
 
 // Output dir
-global dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/"
+global dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/Graphs/"
 
 // Working directory
 global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI/"
@@ -167,6 +167,7 @@ sort b_0
 foreach v of var *_HH* tau* KLratio* {
 	local bm = `v'[$nbm]
 	gen wrtb_`v' = ((`v' - `bm')/`bm')*100
+	gen cev_`v' = exp((`v' - `bm')*(1-0.9950))-1
 	}
 
 // Label all variables
@@ -196,7 +197,7 @@ label var r "Interest rate"
 // Plot all variables
 set scheme plotplainblind
 
-foreach tp in "" "wrtb_" {
+foreach tp in "" "wrtb_" "cev_" {
 foreach v of global myvars {
 	foreach s in "mean" "p50" {
 		local file_aux = "$dir_output" + "SameAssets" + "_" + "`tp'" + "`v'" + "_" + "`s'" + ".eps"
