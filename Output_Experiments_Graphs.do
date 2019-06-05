@@ -10,7 +10,7 @@ set more off, perm
 set trace off
 
 // Output dir
-global dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/"
+global dir_output = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/Graphs/"
 
 // Working directory
 global dir_work = "/home/arnau/Dropbox/Choi_Valladares_2015/QEresubmission/code/HHandUI/"
@@ -142,7 +142,13 @@ use output_$myexp.dta
 
 // Normalise all variables as percentage change with respect to benchmark
 sort b_0
-foreach v of var *_HH* tau* KLratio* TR* ER* UR* {
+foreach v of var *_HH* {
+	local bm = `v'[$nbm]
+	gen wrtb_`v' = ((`v' - `bm')/`bm')*100
+	gen cev_`v' = exp((`v' - `bm')*(1-0.9950))-1
+	}
+
+foreach v of var tau* KLratio* TR* ER* UR* {
 	local bm = `v'[$nbm]
 	gen wrtb_`v' = ((`v' - `bm')/`bm')*100
 	}
