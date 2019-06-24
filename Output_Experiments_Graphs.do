@@ -296,7 +296,14 @@ foreach v of var *s2_sp1 {
 
 
 // Plot all variables
-set scheme plotplainblind
+// set scheme plotplainblind
+grstyle init
+grstyle set plain, horizontal grid dotted
+grstyle set color s2
+// grstyle set symbol
+grstyle set symbol D + T S
+grstyle set symbolsize large
+grstyle set linewidth 2pt
 
 foreach tp in "" "wrtb_" "cev_" {
 foreach v of global myvars {
@@ -312,16 +319,16 @@ foreach v of global myvars {
 
 		if abs(`ub') + abs(`lb') > 2  {
 			twoway (scatter `tp'`v'_`s'_HH1 `tp'`v'_`s'_HH2 `tp'`v'_`s'_HH3 b_0) ///
-			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(black)) ///
-			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') ///
+			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(navy)) ///
+			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(maroon)) ///
+			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(forest_green)), ymtick(`lb'(1)`ub') ///
 																		legend(order(1 2 3) position(6) r(1))
 			}
 		else {
 			twoway (scatter `tp'`v'_`s'_HH1 `tp'`v'_`s'_HH2 `tp'`v'_`s'_HH3 b_0) ///
-			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(black)) ///
-			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3) position(6) r(1))
+			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(navy)) ///
+			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(maroon)) ///
+			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(forest_green)),  legend(order(1 2 3) position(6) r(1))
 			}
 		gr export `file_aux', replace
 	}
@@ -342,16 +349,16 @@ foreach v of global myvars {
 
 		if abs(`ub') + abs(`lb') > 2  {
 			twoway (scatter `tp'`v'_`cvar'q`myq'_HH1 `tp'`v'_`cvar'q`myq'_HH2 `tp'`v'_`cvar'q`myq'_HH3 b_0) ///
-			(mspline `tp'`v'_`cvar'q`myq'_HH1 b_0, lcolor(black)) ///
-			(mspline `tp'`v'_`cvar'q`myq'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)), ymtick(`lb'(1)`ub') ///
+			(mspline `tp'`v'_`cvar'q`myq'_HH1 b_0, lcolor(navy)) ///
+			(mspline `tp'`v'_`cvar'q`myq'_HH2 b_0, lcolor(maroon)) ///
+			(mspline `tp'`v'_`cvar'q`myq'_HH3 b_0, lcolor(forest_green)), ymtick(`lb'(1)`ub') ///
 																						 legend(order(1 2 3) position(6) r(1))
 			}
 		else {
 			twoway (scatter `tp'`v'_`cvar'q`myq'_HH1 `tp'`v'_`cvar'q`myq'_HH2 `tp'`v'_`cvar'q`myq'_HH3 b_0) ///
-			(mspline `tp'`v'_`cvar'q`myq'_HH1 b_0, lcolor(black)) ///
-			(mspline `tp'`v'_`cvar'q`myq'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`cvar'q`myq'_HH3 b_0, lcolor(ltblue)),  legend(order(1 2 3) position(6) r(1))
+			(mspline `tp'`v'_`cvar'q`myq'_HH1 b_0, lcolor(navy)) ///
+			(mspline `tp'`v'_`cvar'q`myq'_HH2 b_0, lcolor(maroon)) ///
+			(mspline `tp'`v'_`cvar'q`myq'_HH3 b_0, lcolor(forest_green)),  legend(order(1 2 3) position(6) r(1))
 			}
 		gr export `file_aux', replace
 	}
@@ -367,10 +374,10 @@ foreach v in 	"TR11" "TR12" "TR13" ///
 							"ER" "UR" {
 	local file_aux = "$dir_output" + "$myexp" + "_" + "`tp'" + "`v'" + ".eps"
 	twoway (scatter `tp'`v'_m0_s1 `tp'`v'_m0_s2 `tp'`v'_m1_s1 `tp'`v'_m1_s2 b_0) ///
-	(mspline `tp'`v'_m0_s1 b_0, lcolor(black)) ///
-	(mspline `tp'`v'_m0_s2 b_0, lcolor(gray)) ///
-	(mspline `tp'`v'_m1_s1 b_0, lcolor(ltblue)) ///
-	(mspline `tp'`v'_m1_s2 b_0, lcolor(green)),  legend(order(1 2 3 4) position(6) r(1))
+	(mspline `tp'`v'_m0_s1 b_0, lcolor(navy)) ///
+	(mspline `tp'`v'_m0_s2 b_0, lcolor(maroon)) ///
+	(mspline `tp'`v'_m1_s1 b_0, lcolor(forest_green)) ///
+	(mspline `tp'`v'_m1_s2 b_0, lcolor(dkorange)),  legend(order(1 2 3 4) position(6) r(1))
 	gr export `file_aux', replace
 }
 }
@@ -383,10 +390,10 @@ foreach v in 	"TR11" "TR12" "TR13" ///
 							"ER" "UR" {
 	local file_aux = "$dir_output" + "$myexp" + "_" + "`tp'" + "`v'" + "_cspouse" + ".eps"
 	twoway (scatter `tp'`v'_s1_sp0 `tp'`v'_s1_sp1 `tp'`v'_s2_sp0 `tp'`v'_s2_sp1 b_0) ///
-	(mspline `tp'`v'_s1_sp0 b_0, lcolor(black)) ///
-	(mspline `tp'`v'_s1_sp1 b_0, lcolor(gray)) ///
-	(mspline `tp'`v'_s2_sp0 b_0, lcolor(ltblue)) ///
-	(mspline `tp'`v'_s2_sp1 b_0, lcolor(green)),  legend(order(1 2 3 4) position(6) r(1))
+	(mspline `tp'`v'_s1_sp0 b_0, lcolor(navy)) ///
+	(mspline `tp'`v'_s1_sp1 b_0, lcolor(maroon)) ///
+	(mspline `tp'`v'_s2_sp0 b_0, lcolor(forest_green)) ///
+	(mspline `tp'`v'_s2_sp1 b_0, lcolor(dkorange)),  legend(order(1 2 3 4) position(6) r(1))
 	gr export `file_aux', replace
 }
 }
@@ -396,7 +403,7 @@ foreach tp in "" "wrtb_" {
 foreach v in "rwealth_HHall" "KLratio" "tau" {
 	local file_aux = "$dir_output" + "$myexp" + "_" + "`tp'" + "`v'" + ".eps"
 	twoway (scatter `tp'`v' b_0) ///
-	(mspline `tp'`v' b_0, lcolor(black)),  legend(off)
+	(mspline `tp'`v' b_0, lcolor(navy)),  legend(off)
 	gr export `file_aux', replace
 }
 }
@@ -405,10 +412,10 @@ foreach v in "rwealth_HHall" "KLratio" "tau" {
 foreach tp in "" "wrtb_" {
 	local file_aux = "$dir_output" + "$myexp" + "_" + "`tp'" + "gini" + ".eps"
 	twoway (scatter `tp'gwealth_HH1 `tp'gwealth_HH2 `tp'gwealth_HH3 `tp'gwealth_HHall b_0) ///
-	(mspline `tp'gwealth_HH1 b_0, lcolor(black)) ///
-	(mspline `tp'gwealth_HH2 b_0, lcolor(gray)) ///
-	(mspline `tp'gwealth_HH3 b_0, lcolor(ltblue)) ///
-	(mspline `tp'gwealth_HHall b_0, lcolor(green)),  legend(order(1 2 3 4) position(6) r(1))
+	(mspline `tp'gwealth_HH1 b_0, lcolor(navy)) ///
+	(mspline `tp'gwealth_HH2 b_0, lcolor(maroon)) ///
+	(mspline `tp'gwealth_HH3 b_0, lcolor(forest_green)) ///
+	(mspline `tp'gwealth_HHall b_0, lcolor(dkorange)),  legend(order(1 2 3 4) position(6) r(1))
 	gr export `file_aux', replace
 }
 

@@ -195,7 +195,14 @@ label var average_z "Average z employed"
 label var r "Interest rate"
 
 // Plot all variables
-set scheme plotplainblind
+// set scheme plotplainblind
+grstyle init
+grstyle set plain, horizontal grid dotted
+grstyle set color s2
+// grstyle set symbol
+grstyle set symbol D + T S
+grstyle set symbolsize large
+grstyle set linewidth 2pt
 
 foreach tp in "" "wrtb_" "cev_" {
 foreach v of global myvars {
@@ -211,17 +218,17 @@ foreach v of global myvars {
 
 		if abs(`ub') + abs(`lb') > 2  {
 			twoway (scatter `tp'`v'_`s'_HH1 `tp'`v'_`s'_HH2 `tp'`v'_`s'_HH3 `tp'`v'_`s'_HH4 b_0) ///
-			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(black)) ///
-			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(ltblue)) ///
-			(mspline `tp'`v'_`s'_HH4 b_0, lcolor(green)), ymtick(`lb'(1)`ub') legend(order(1 2 3 4))
+			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(navy)) ///
+			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(maroon)) ///
+			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(forest_green)) ///
+			(mspline `tp'`v'_`s'_HH4 b_0, lcolor(dkorange)), ymtick(`lb'(1)`ub') legend(order(1 2 3 4))
 			}
 		else {
 			twoway (scatter `tp'`v'_`s'_HH1 `tp'`v'_`s'_HH2 `tp'`v'_`s'_HH3 `tp'`v'_`s'_HH4 b_0) ///
-			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(black)) ///
-			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(gray)) ///
-			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(ltblue)) ///
-			(mspline `tp'`v'_`s'_HH4 b_0, lcolor(green)),  legend(order(1 2 3 4))
+			(mspline `tp'`v'_`s'_HH1 b_0, lcolor(navy)) ///
+			(mspline `tp'`v'_`s'_HH2 b_0, lcolor(maroon)) ///
+			(mspline `tp'`v'_`s'_HH3 b_0, lcolor(forest_green)) ///
+			(mspline `tp'`v'_`s'_HH4 b_0, lcolor(dkorange)),  legend(order(1 2 3 4))
 			}
 		gr export `file_aux', replace
 	}
