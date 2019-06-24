@@ -135,7 +135,6 @@ forval e = 1/$nexp {
 	clear
 	}
 
-
 // Open output dataset
 cd $dir_work
 use output_$myexp.dta
@@ -170,13 +169,20 @@ label var r "Interest rate"
 
 
 // Plot all variables
-set scheme plotplainblind
+// set scheme plotplainblind
+grstyle init
+grstyle set plain, horizontal grid dotted
+grstyle set color s2
+// grstyle set symbol
+grstyle set symbol D + T S
+grstyle set symbolsize large
+grstyle set linewidth 2pt
 
 // Variables graphed alone
 foreach v of var *_HH* *tau* *KLratio* *TR* *ER* *UR* {
 	local file_aux = "$dir_output" + "$myexp" + "_" + "`v'" + ".eps"
 	twoway (scatter `v' b_0) ///
-	(mspline `v' b_0, lcolor(black)),  legend(off)
+	(mspline `v' b_0, lcolor(navy)),  legend(off)
 	gr export `file_aux', replace
 }
 
