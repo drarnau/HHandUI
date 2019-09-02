@@ -1,13 +1,13 @@
-0.485     ! Utility cost of working male
-0.485     ! Utility cost of working female
-0.00      ! Utility cost of joint work
-0.99465   ! Discount factor
-0.0       ! Consumption floor
+0.1716    ! Utility cost of working male
+0.3620    ! Utility cost of working female
+0.0260    ! Utility cost of joint work
+0.9950    ! Discount factor
+1.7010    ! Consumption floor
 1.7       ! Adult-equivalent scale
-0.0424375 ! Average search cost male
-0.0424375 ! Average search cost female
-0.030555  ! Standard deviation search cost male
-0.030555  ! Standard deviation search cost female
+0.015015  ! Average search cost male
+0.031675  ! Average search cost female
+0.0140    ! Standard deviation search cost male
+0.0304    ! Standard deviation search cost female
 0.996     ! Persistence productivity male
 0.0       ! Persistence of female on male
 0.0       ! Persistence of male on female
@@ -15,9 +15,9 @@
 0.096     ! Standard deviation productivity male
 0.0       ! Covariance
 0.096     ! Standard deviation productivity female
-0.282     ! Probability of finding a job for unemployed male
-0.282     ! Probability of finding a job for unemployed female
-0.18189   ! Probability of finding a job for OLF male
-0.18189   ! Probability of finding a job for OLF female
-0.0178    ! Probability of losing a job for employed male
+0.7861    ! Probability of finding a job for unemployed male
+0.4065    ! Probability of finding a job for unemployed female
+0.6982    ! Probability of finding a job for OLF male
+0.3577    ! Probability of finding a job for OLF female
+0.0266    ! Probability of losing a job for employed male
 0.0178    ! Probability of losing a job for employed female

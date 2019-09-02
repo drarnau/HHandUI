@@ -1,10 +1,10 @@
-0.485     ! Utility cost of working
-0.99465   ! Discount factor
+0.5185    ! Utility cost of working
+0.9950    ! Discount factor
 0.0       ! Consumption floor
-0.0424375 ! Average search cost
-0.030555  ! Standard deviation search cost
+0.0453687 ! Average search cost
+0.0433    ! Standard deviation search cost
 0.996     ! Persistence productivity process
 0.096     ! Standard deviation productivity process
-0.282     ! Probability of finding a job for unemployed agents
-0.18189   ! Probability of finding a job for OLF agents
-0.0178    ! Probability of losing a job for employed agents
+0.3178    ! Probability of finding a job for unemployed agents
+0.2602    ! Probability of finding a job for OLF agents
+0.0210    ! Probability of losing a job for employed agents
