@@ -14,11 +14,7 @@ There are three types of parameters (mutually exclusive categories):
   - Use Golden search method to find value of assets that solves the Bellman equations.
 2. Use **decision rules** to simulate life of a large number of agents and compute targeted moments.
 
-<<<<<<< HEAD
 ## Compilation instructions
-=======
-# Compilation instructions
->>>>>>> 5cccab13bdcf1e586d4d1d20b39443df5d5b7075
 1. Navigate to the folder where the `.f90` files are located.
 2. Create an executable file with gfortran:
   - *Normal*: `gfortran -g -fcheck=all -fbacktrace -Wall -mcmodel=large Globals.f90 Utils.f90 Initialisation.f90 VFiteration.f90 Households.f90 Simulation.f90 Main.f90 -o main.out`.
