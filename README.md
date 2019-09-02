@@ -1,4 +1,4 @@
-This repository contains all files necessary to replicate the results in _On Households and Unemployment Insurance_ by Sekyu Choi and Arnau Valladares-Esteban.
+[This repository](https://github.com/drarnau/HHandUI) contains all files necessary to replicate the results in _On Households and Unemployment Insurance_ by Sekyu Choi and Arnau Valladares-Esteban.
 
 ## Implementation concept
 The algorithm receives **parameters** from the outside world, solves the model, and returns **moments of the simulated data** as output.
