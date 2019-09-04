@@ -15,6 +15,8 @@ There are three types of parameters (mutually exclusive categories):
 2. Use **decision rules** to simulate life of a large number of agents and compute targeted moments.
 
 ## Compilation instructions
+These instructions consider gfortran version X, running on UNIX/MACOS (?) version Y, on a double/triple core machine with ZZ GB of RAM memory. Execution time for the above is around ABC minutes. Output of the code is stored in folder <FOLDER>.
+
 1. Navigate to the folder where the `.f90` files are located.
 2. Create an executable file with gfortran:
   - *Normal*: `gfortran -g -fcheck=all -fbacktrace -Wall -mcmodel=large Globals.f90 Utils.f90 Initialisation.f90 VFiteration.f90 Households.f90 Simulation.f90 Main.f90 -o main.out`.
