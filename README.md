@@ -15,7 +15,7 @@ There are three types of parameters (mutually exclusive categories):
 2. Use **decision rules** to simulate life of a large number of agents and compute targeted moments.
 
 ## Compilation instructions
-These instructions consider `GNU Fortran (Ubuntu 7.4.0-1ubuntu1~18.04.1) 7.4.0` on a double core machine with 15 GB of RAM memory. Execution time for the above is around 3 minutes. Output of the code is stored in the folder where the executable is saved.
+These instructions consider `GNU Fortran (Ubuntu 7.4.0-1ubuntu1~18.04.1) 7.4.0` on a double core machine with 15 GB of RAM memory. Execution time for the above is around 45 minutes to find equilibrium prices. Output of the code is stored in the folder where the executable is saved.
 
 1. Navigate to the folder where the `.f90` files are located.
 2. Create an executable file with gfortran:
